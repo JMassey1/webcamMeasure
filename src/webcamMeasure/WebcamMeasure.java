@@ -1,5 +1,6 @@
 package webcamMeasure;
 
+import java.awt.Color;
 import java.awt.Desktop;
 import java.awt.FlowLayout;
 import java.awt.Graphics2D;
@@ -32,7 +33,9 @@ public class WebcamMeasure {
 	private static Desktop desktop;
 	private static int counter;
 	private static Writer wr;
-	private static final int THRESHOLD = 200;
+	private static final int THRESHOLD = 50;
+	private static final int DISTANCE_WIDTH = 10; //Distance in inches
+	private static final int DISTANCE_TO_BACKGROUND = 10; //Distance in inches
 
 	public static void main(String[] args) throws InterruptedException, IOException {
 		Scanner in = new Scanner(new File("counter.txt"));
@@ -48,6 +51,7 @@ public class WebcamMeasure {
 		java.util.List<Webcam> tempList = Webcam.getWebcams();
 		Webcam webcam = tempList.get(tempList.size()-1);
 		webcam.setViewSize(WebcamResolution.VGA.getSize());
+		System.out.println(WebcamResolution.VGA.getSize());
 		WebcamPanel panel = new WebcamPanel(webcam);
 		panel.setFPSDisplayed(true);
 		panel.setDisplayDebugInfo(true);
@@ -68,7 +72,7 @@ public class WebcamMeasure {
 		response.setText("Press to Capture");
 		response.setBounds(10,110,100,100);
 		capture.setBounds(100,100,200,50);
-		System.out.println("2  " + counter);
+//		System.out.println("2  " + counter);
 		capture.addActionListener(new ActionListener() {
 			
 			@Override
@@ -76,7 +80,8 @@ public class WebcamMeasure {
 				response.setText("Image Captured");
 				image = webcam.getImage();
 				try {
-					measureDistance(image);
+					int[] results = measureDistance(image);
+					System.out.printf("PIXELS%nLength: %d%nHeight: %d%nINCHES%nLength: %f%nWidth: %f",results[0], results[1],pixToInchL(results[0]),pixToInchW(results[1]));
 //					ImageIO.write(measureDistance(image), "PNG", new File("testingstuff.png"));
 				} catch (IOException e1) {
 					e1.printStackTrace();
@@ -120,39 +125,68 @@ public class WebcamMeasure {
 
 	}
 	//MAKE RETURN INT ONLY SET TO VOID SO THAT ECLIPSE WILL SHUT UP
-	public static BufferedImage measureDistance(Image img) throws IOException {
-		BufferedImage grayImg = new BufferedImage(img.getWidth(null), img.getHeight(null), BufferedImage.TYPE_INT_ARGB);
+	public static int[] measureDistance(Image img) throws IOException {
+		BufferedImage grayImg = makeGrayscale(img);
+//		ImageIO.write(grayImg, "PNG", new File("rendere20.png"));
 		Graphics2D grayImgGraphics = grayImg.createGraphics();
-		grayImgGraphics.drawImage(img, null, null);
-		grayImgGraphics.drawOval(10, 10, 1000, 10);
+		grayImgGraphics.drawImage(grayImg, 0, 0, Color.WHITE, null);
+//		grayImgGraphics.drawOval(10, 10, 1000, 10);
 		RenderedImage renderedImage = (RenderedImage)grayImg;
 		ImageIO.write(renderedImage, "PNG", new File("rendered.png"));
-		int pixel;
+		int pixel,count,max,height;
+		max = 0;
+		height = 0;
 		for (int y = 0; y < grayImg.getHeight(); y++) {
+			count = 0;
 			for (int x = 0; x < grayImg.getWidth(); x++) {
 				pixel = grayImg.getRGB(x, y);
-				if (isWhite(pixel)) {
-					
+				if (!isWhite(pixel)) {
+					count++;
 				}
 			}
+			if (count > max) {
+				max = count;
+				height = y;
+			}
 		}
-//		Graphics2D graphicsImage = grayImg.createGraphics();
-		return grayImg;
+		return new int[] {max,height};
 	}
 	
 	//GIVEN ORIGINAL PICTURE, TURNS IT TO GRAYSCALE
-	public static BufferedImage makeGrayscale(BufferedImage original) {
+	public static BufferedImage makeGrayscale(Image img) {
+		BufferedImage original = toBufferedImage(img);
 		int w = original.getWidth();
 		int h = original.getHeight();
 		BufferedImage temp = new BufferedImage(w,h,BufferedImage.TYPE_INT_ARGB);
 		for (int x = 0; x < w; x++) {
 			for (int y = 0; y < h; y++) {
 				int pixel = original.getRGB(x, y);
+//				System.out.println("FIRST: " + pixel);
 				temp.setRGB(x, y, makeGrayPix(pixel));
+//				System.out.println("SECOND " + makeGrayPix(pixel) + "/n");
 			}
 		}
 		return temp;
 	}
+//	public static BufferedImage makeGrayscale(BufferedImage original) {
+//		BufferedImage result = new BufferedImage(original.getWidth(), original.getHeight(), BufferedImage.TYPE_INT_RGB);
+//		Graphics2D graphics = result.createGraphics();
+//		graphics.drawImage(original, 0, 0, Color.WHITE, null);
+//		
+//		for (int i = 0; i < result.getHeight(); i++) {
+//			for (int w = 0; w < result.getWidth(); w++) {
+//				Color c = new Color(result.getRGB(w,i));
+//				int red = (int)(c.getRed() * 0.299);
+//				System.out.println("FIRST COLOR: " + red);
+//				System.out.println("SECOND COLOR: " + getRed(result.getRGB(w, i)));
+//				int green = (int) (c.getGreen() * 0.587);
+//				int blue = (int) (c.getBlue() * 0.114);
+//				Color newColor = new Color(red+green+blue,red+green+blue,red+green+blue);
+//				result.setRGB(w, i, newColor.getRGB());
+//			}
+//		}
+//		return result;
+//	}
 	//CHANGES PIXEL TO GRAYSCALE USING BIT SHIFTS AND AVERAGE PIXEL COLORS
 	public static int makeGrayPix(int pix) {
 		int alpha = getAlpha(pix);
@@ -161,6 +195,13 @@ public class WebcamMeasure {
 		int blue = getBlue(pix);
 		int avg = (red + green + blue)/3;
 		return ((alpha<<24) | (avg<<16) | (avg<<8) | avg);
+	}
+	
+	public static double pixToInchL(int px) {
+		return (((double)px)*12/640);
+	}
+	public static double pixToInchW(int px) {
+		return (((double)px)*12/480);
 	}
 	
 	public static boolean isWhite(int pixel) {
@@ -181,5 +222,17 @@ public class WebcamMeasure {
 	}
 	public static int getBlue(int pix) {
 		return pix & 0xff;
+	}
+
+	public static BufferedImage toBufferedImage(Image img)
+	{
+	    if (img instanceof BufferedImage){
+	        return (BufferedImage) img;
+	    }
+	    BufferedImage bimage = new BufferedImage(img.getWidth(null), img.getHeight(null), BufferedImage.TYPE_INT_ARGB);
+	    Graphics2D bGr = bimage.createGraphics();
+	    bGr.drawImage(img, 0, 0, null);
+	    bGr.dispose();
+	    return bimage;
 	}
 }
