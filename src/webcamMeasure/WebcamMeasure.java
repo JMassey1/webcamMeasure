@@ -11,7 +11,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
-import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
@@ -115,7 +114,7 @@ public class WebcamMeasure {
 					pixel1.setText("Length: " + Integer.toString(results[0]) + " px");
 					pixel2.setText("Height: " + Integer.toString(results[1]) + " px");
 					inch1.setText("Length: " + Double.toString(pixToInchL(results[0])) + " in");
-					inch2.setText("Height" + Double.toString(pixToInchW(results[1])) + " in");
+					inch2.setText("Height: " + Double.toString(pixToInchW(results[1])) + " in");
 					filler.setText("\n");
 					text.add(pixelM);
 					text.add(pixel1);
