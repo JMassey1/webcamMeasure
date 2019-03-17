@@ -2,10 +2,10 @@
 <classpath>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="lib" path="C:/Users/j.massey1/Documents/GitHub/webcamMeasure/webcamAPI/slf4j-nop-1.7.26.jar"/>
-	<classpathentry kind="lib" path="C:/Users/j.massey1/Documents/GitHub/webcamMeasure/webcamAPI/slf4j-nop-1.7.26-sources.jar"/>
-	<classpathentry kind="lib" path="C:/Users/j.massey1/Documents/GitHub/webcamMeasure/webcamAPI/webcam-capture-0.3.10.jar"/>
-	<classpathentry kind="lib" path="C:/Users/j.massey1/Documents/GitHub/webcamMeasure/webcamAPI/libs/bridj-0.6.2.jar"/>
-	<classpathentry kind="lib" path="C:/Users/j.massey1/Documents/GitHub/webcamMeasure/webcamAPI/libs/slf4j-api-1.7.2.jar"/>
+	<classpathentry kind="lib" path="webcamAPI/libs/bridj-0.6.2.jar"/>
+	<classpathentry kind="lib" path="webcamAPI/libs/slf4j-api-1.7.2.jar"/>
+	<classpathentry kind="lib" path="webcamAPI/slf4j-nop-1.7.26-sources.jar"/>
+	<classpathentry kind="lib" path="webcamAPI/slf4j-nop-1.7.26.jar"/>
+	<classpathentry kind="lib" path="webcamAPI/webcam-capture-0.3.10.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

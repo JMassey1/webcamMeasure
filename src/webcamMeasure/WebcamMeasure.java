@@ -18,9 +18,12 @@ import java.io.Writer;
 import java.util.Scanner;
 
 import javax.imageio.ImageIO;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 
 import com.github.sarxos.webcam.Webcam;
 import com.github.sarxos.webcam.WebcamPanel;
@@ -34,8 +37,8 @@ public class WebcamMeasure {
 	private static int counter;
 	private static Writer wr;
 	private static final int THRESHOLD = 50;
-	private static final int DISTANCE_WIDTH = 10; //Distance in inches
-	private static final int DISTANCE_TO_BACKGROUND = 10; //Distance in inches
+	private static final int DISTANCE_WIDTH = 12; //Distance in inches
+	private static final int DISTANCE_TO_BACKGROUND = 12; //Distance in inches
 
 	public static void main(String[] args) throws InterruptedException, IOException {
 		Scanner in = new Scanner(new File("counter.txt"));
@@ -67,8 +70,11 @@ public class WebcamMeasure {
 		
 		
 		JFrame window = new JFrame("Webcam Viewer Panel");
+		JPanel captureP = new JPanel();
 		JButton capture = new JButton("Capture");
 		JLabel response = new JLabel();
+		JRadioButton save = new JRadioButton("Save Picture");
+		captureP.setLayout(new BoxLayout(captureP, BoxLayout.Y_AXIS));
 		response.setText("Press to Capture");
 		response.setBounds(10,110,100,100);
 		capture.setBounds(100,100,200,50);
@@ -86,19 +92,21 @@ public class WebcamMeasure {
 				} catch (IOException e1) {
 					e1.printStackTrace();
 				}
-//				try {
-//					System.out.println("4  " + counter);
-//					picture = new File("test" + counter + ".png");
-//					ImageIO.write(image, "PNG", picture);
-////					Thread.sleep(1000);
-//					desktop.open(picture);
-//					counter++;
-//					response.setText("Press to Capture");
-//					System.out.println("5  " + counter);
-//				} catch (IOException e) {
-//					e.printStackTrace();
-//				}
-			}});
+				if (save.isSelected()) {
+					try {
+						System.out.println("4  " + counter);
+						picture = new File("test" + counter + ".png");
+						ImageIO.write(image, "PNG", picture);
+						desktop.open(picture);
+						counter++;
+						response.setText("Press to Capture");
+						System.out.println("5  " + counter);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		});
 		window.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
 				try {
@@ -114,9 +122,12 @@ public class WebcamMeasure {
 			}
 		});
 		window.setLayout(new FlowLayout());
-		window.add(capture);
+		
+		captureP.add(capture);
+		captureP.add(response);
+		captureP.add(save);
 		window.add(panel);
-		window.add(response);
+		window.add(captureP);
 		window.setResizable(true);
 		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		window.pack();
@@ -153,6 +164,7 @@ public class WebcamMeasure {
 	}
 	
 	//GIVEN ORIGINAL PICTURE, TURNS IT TO GRAYSCALE
+	
 	public static BufferedImage makeGrayscale(Image img) {
 		BufferedImage original = toBufferedImage(img);
 		int w = original.getWidth();
@@ -168,6 +180,8 @@ public class WebcamMeasure {
 		}
 		return temp;
 	}
+	
+/*
 //	public static BufferedImage makeGrayscale(BufferedImage original) {
 //		BufferedImage result = new BufferedImage(original.getWidth(), original.getHeight(), BufferedImage.TYPE_INT_RGB);
 //		Graphics2D graphics = result.createGraphics();
@@ -186,7 +200,8 @@ public class WebcamMeasure {
 //			}
 //		}
 //		return result;
-//	}
+//	} 
+*/
 	//CHANGES PIXEL TO GRAYSCALE USING BIT SHIFTS AND AVERAGE PIXEL COLORS
 	public static int makeGrayPix(int pix) {
 		int alpha = getAlpha(pix);
@@ -198,10 +213,10 @@ public class WebcamMeasure {
 	}
 	
 	public static double pixToInchL(int px) {
-		return (((double)px)*12/640);
+		return (((double)px)*DISTANCE_WIDTH/640);
 	}
 	public static double pixToInchW(int px) {
-		return (((double)px)*12/480);
+		return (((double)px)*DISTANCE_TO_BACKGROUND/480);
 	}
 	
 	public static boolean isWhite(int pixel) {
