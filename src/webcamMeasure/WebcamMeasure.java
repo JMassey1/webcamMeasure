@@ -3,6 +3,7 @@ package webcamMeasure;
 import java.awt.Color;
 import java.awt.Desktop;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
@@ -89,6 +90,38 @@ public class WebcamMeasure {
 					int[] results = measureDistance(image);
 					System.out.printf("PIXELS%nLength: %d%nHeight: %d%nINCHES%nLength: %f%nWidth: %f",results[0], results[1],pixToInchL(results[0]),pixToInchW(results[1]));
 //					ImageIO.write(measureDistance(image), "PNG", new File("testingstuff.png"));
+					JFrame resultsF = new JFrame("Results");
+					JPanel text = new JPanel();
+					text.setLayout(new BoxLayout(text, BoxLayout.Y_AXIS));
+					JLabel pixelM = new JLabel();
+					JLabel inchM = new JLabel();
+					JLabel pixel1 = new JLabel();
+					JLabel pixel2 = new JLabel();
+					JLabel inch1 = new JLabel();
+					JLabel inch2 = new JLabel();
+					JLabel filler = new JLabel();
+					pixelM.setText("PIXEL MEASUREMENTS");
+					pixelM.setFont(new Font("Calibri", Font.BOLD, 20));
+					inchM.setText("IMPERIAL SYSTEM MEASUREMENTS");
+					inchM.setFont(new Font("Calibri", Font.BOLD, 20));
+					pixel1.setText("Length: " + Integer.toString(results[0]) + " px");
+					pixel2.setText("Height: " + Integer.toString(results[1]) + " px");
+					inch1.setText("Length: " + Double.toString(pixToInchL(results[0])) + " in");
+					inch2.setText("Height" + Double.toString(pixToInchW(results[1])) + " in");
+					filler.setText("\n");
+					text.add(pixelM);
+					text.add(pixel1);
+					text.add(pixel2);
+					text.add(filler);
+					text.add(inchM);
+					text.add(inch1);
+					text.add(inch2);
+					
+					resultsF.add(text);
+					resultsF.setResizable(true);
+//					resultsF.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+					resultsF.pack();
+					resultsF.setVisible(true);
 				} catch (IOException e1) {
 					e1.printStackTrace();
 				}
@@ -132,7 +165,7 @@ public class WebcamMeasure {
 		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		window.pack();
 		window.setVisible(true);
-		System.out.println("3  " + counter);
+//		System.out.println("3  " + counter);
 
 	}
 	//MAKE RETURN INT ONLY SET TO VOID SO THAT ECLIPSE WILL SHUT UP
