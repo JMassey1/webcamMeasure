@@ -79,14 +79,24 @@ public class WebcamMeasure {
 		
 		JFrame window = new JFrame("Webcam Viewer Panel");
 		JPanel captureP = new JPanel();
-		JButton capture = new JButton("Capture");
+		JPanel captureP1 = new JPanel();
+		JButton capture = new JButton("Side View");
+		JButton capture1 = new JButton("Front View");
 		JLabel response = new JLabel();
+		JLabel response1 = new JLabel();
 		JRadioButton save = new JRadioButton("Save Picture");
+		JRadioButton save1 = new JRadioButton("Save Picture");
 		captureP.setLayout(new BoxLayout(captureP, BoxLayout.Y_AXIS));
+		captureP1.setLayout(new BoxLayout(captureP1, BoxLayout.Y_AXIS));
+		
 		response.setText("Press to Capture");
+		response1.setText("Press to Capture");
 		response.setBounds(10,110,100,100);
-		capture.setBounds(100,100,200,50);
-//		System.out.println("2  " + counter);
+		response1.setBounds(10,110,100,100);
+		
+		capture.setBounds(100,100,210,50);
+		capture1.setBounds(100,100,200,50);
+		
 		capture.addActionListener(new ActionListener() {
 			
 			@Override
@@ -96,8 +106,7 @@ public class WebcamMeasure {
 				try {
 					int[] results = measureDistance(image);
 					System.out.printf("PIXELS%nLength: %d%nHeight: %d%nINCHES%nLength: %f%nWidth: %f",results[0], results[1],pixToInchL(results[0]),pixToInchW(results[1]));
-//					ImageIO.write(measureDistance(image), "PNG", new File("testingstuff.png"));
-					JFrame resultsF = new JFrame("Results");
+					JFrame resultsF = new JFrame("Side View");
 					JPanel text = new JPanel();
 					text.setLayout(new BoxLayout(text, BoxLayout.Y_AXIS));
 					JLabel pixelM = new JLabel();
@@ -135,11 +144,70 @@ public class WebcamMeasure {
 				if (save.isSelected()) {
 					try {
 						System.out.println("4  " + counter);
-						picture = new File("test" + counter + ".png");
+						picture = new File("side" + counter + ".png");
 						ImageIO.write(image, "PNG", picture);
 						desktop.open(picture);
 						counter++;
 						response.setText("Press to Capture");
+						System.out.println("5  " + counter);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		});
+		capture1.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				response1.setText("Image Captured");
+				image = webcam.getImage();
+				try {
+					int[] results = measureDistance(image);
+					System.out.printf("PIXELS%nLength: %d%nHeight: %d%nINCHES%nLength: %f%nWidth: %f",results[0], results[1],pixToInchL(results[0]),pixToInchW(results[1]));
+					JFrame resultsF = new JFrame("Front View");
+					JPanel text = new JPanel();
+					text.setLayout(new BoxLayout(text, BoxLayout.Y_AXIS));
+					JLabel pixelM = new JLabel();
+					JLabel inchM = new JLabel();
+					JLabel pixel1 = new JLabel();
+					JLabel pixel2 = new JLabel();
+					JLabel inch1 = new JLabel();
+					JLabel inch2 = new JLabel();
+					JLabel filler = new JLabel();
+					pixelM.setText("PIXEL MEASUREMENTS");
+					pixelM.setFont(new Font("Calibri", Font.BOLD, 20));
+					inchM.setText("IMPERIAL SYSTEM MEASUREMENTS");
+					inchM.setFont(new Font("Calibri", Font.BOLD, 20));
+					pixel1.setText("Length: " + Integer.toString(results[0]) + " px");
+					pixel2.setText("Height: " + Integer.toString(results[1]) + " px");
+					inch1.setText("Length: " + Double.toString(pixToInchL(results[0])) + " in");
+					inch2.setText("Height: " + Double.toString(pixToInchW(results[1])) + " in");
+					filler.setText("\n");
+					text.add(pixelM);
+					text.add(pixel1);
+					text.add(pixel2);
+					text.add(filler);
+					text.add(inchM);
+					text.add(inch1);
+					text.add(inch2);
+					
+					resultsF.add(text);
+					resultsF.setResizable(true);
+//					resultsF.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+					resultsF.pack();
+					resultsF.setVisible(true);
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+				if (save1.isSelected()) {
+					try {
+						System.out.println("4  " + counter);
+						picture = new File("front" + counter + ".png");
+						ImageIO.write(image, "PNG", picture);
+						desktop.open(picture);
+						counter++;
+						response1.setText("Press to Capture");
 						System.out.println("5  " + counter);
 					} catch (IOException e) {
 						e.printStackTrace();
@@ -165,8 +233,14 @@ public class WebcamMeasure {
 		captureP.add(capture);
 		captureP.add(response);
 		captureP.add(save);
+		
+		captureP1.add(capture1);
+		captureP1.add(response1);
+		captureP1.add(save1);
+		
 		window.add(panel);
 		window.add(captureP);
+		window.add(captureP1);
 		window.setResizable(true);
 		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		window.pack();
