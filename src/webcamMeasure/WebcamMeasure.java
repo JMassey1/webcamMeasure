@@ -13,6 +13,7 @@ import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
@@ -42,6 +43,7 @@ public class WebcamMeasure {
 	private static final int DISTANCE_TO_BACKGROUND = 12; //Distance in inches
 
 	public static void main(String[] args) throws InterruptedException, IOException {
+		try {
 		Scanner in = new Scanner(new File("counter.txt"));
 		if (!in.hasNext()) {
 		String temp = in.nextLine();
@@ -49,6 +51,12 @@ public class WebcamMeasure {
 		System.out.println(temp);
 		} else {
 			counter = 0; 		
+		}
+		in.close();
+		} catch(FileNotFoundException e) {
+			Writer tempWr = new FileWriter("counter.txt");
+			tempWr.write(Integer.toString(0));
+			tempWr.close();
 		}
 		
 		
@@ -146,7 +154,6 @@ public class WebcamMeasure {
 					wr = new FileWriter("counter.txt");
 					wr.write(Integer.toString(counter));
 					wr.close();
-					in.close();
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
@@ -166,7 +173,6 @@ public class WebcamMeasure {
 		window.pack();
 		window.setVisible(true);
 //		System.out.println("3  " + counter);
-
 	}
 	//MAKE RETURN INT ONLY SET TO VOID SO THAT ECLIPSE WILL SHUT UP
 	public static int[] measureDistance(Image img) throws IOException {
@@ -175,8 +181,8 @@ public class WebcamMeasure {
 		Graphics2D grayImgGraphics = grayImg.createGraphics();
 		grayImgGraphics.drawImage(grayImg, 0, 0, Color.WHITE, null);
 //		grayImgGraphics.drawOval(10, 10, 1000, 10);
-		RenderedImage renderedImage = (RenderedImage)grayImg;
-		ImageIO.write(renderedImage, "PNG", new File("rendered.png"));
+//		RenderedImage renderedImage = (RenderedImage)grayImg;
+//		ImageIO.write(renderedImage, "PNG", new File("rendered.png"));
 		int pixel,count,max,height;
 		max = 0;
 		height = 0;
