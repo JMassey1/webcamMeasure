@@ -9,5 +9,8 @@
 	<classpathentry kind="lib" path="webcamAPI/webcam-capture-0.3.10.jar"/>
 	<classpathentry kind="lib" path="otherAPI/jsoup/jsoup-1.11.3.jar"/>
 	<classpathentry kind="lib" path="otherAPI/frostwire/dist/fw-jwebbrowser.jar"/>
+	<classpathentry kind="lib" path="otherAPI/djAPI/DJNativeSwing-SWT.jar"/>
+	<classpathentry kind="lib" path="otherAPI/djAPI/DJNativeSwing-SWTDemo.jar"/>
+	<classpathentry kind="lib" path="otherAPI/djAPI/DJNativeSwing.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

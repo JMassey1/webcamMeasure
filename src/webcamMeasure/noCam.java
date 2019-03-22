@@ -18,8 +18,13 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.net.MalformedURLException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 import javax.imageio.ImageIO;
 import javax.swing.BoxLayout;
@@ -37,6 +42,11 @@ import com.github.sarxos.webcam.Webcam;
 import com.github.sarxos.webcam.WebcamPanel;
 import com.github.sarxos.webcam.WebcamResolution;
 
+import javafx.application.Platform;
+import javafx.embed.swing.JFXPanel;
+import javafx.scene.Scene;
+import javafx.scene.web.WebView;
+
 public class noCam {
 	
 	private static BufferedImage image;
@@ -47,8 +57,8 @@ public class noCam {
 	private static boolean isMale = true;
 	private static Shoe shoeSize;
 	private static final int THRESHOLD = 50;
-	private static final double DISTANCE_WIDTH = 1; //Distance in inches
-	private static final double DISTANCE_TO_MEASURE = 1; //Distance in inches
+	private static final double DISTANCE_WIDTH = 12; //Distance in inches
+	private static final double DISTANCE_TO_MEASURE = 12; //Distance in inches
 	private static final int PIX_WIDTH_CUSTOM = 100;
 	private static final int PIX_HEIGHT_CUSTOM = 100;
 	
@@ -157,6 +167,20 @@ public class noCam {
 //					resultsF.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 					resultsF.pack();
 					resultsF.setVisible(true);
+					
+					
+					JFrame newWindow = new JFrame();
+					JFXPanel panel = new JFXPanel();
+					Platform.runLater( () -> {
+						WebView webView = new WebView();
+						webView.getEngine().load(shoeSize.getShoeURL());
+						panel.setScene(new Scene(webView));
+					});
+					newWindow.add(panel);
+					newWindow.setResizable(true);
+					newWindow.setVisible(true);
+					newWindow.add(new JLabel(shoeSize.getShoeURL() + "////" + Double.toString(shoeSize.getShoeSize())));
+//					newWindow.add(new JLabel(Double.toString(shoeSize.getShoeSize())));
 				} catch (IOException e1) {
 					e1.printStackTrace();
 				}
@@ -367,18 +391,81 @@ class Shoe {
 					return shoes[0];
 				}
 			}
+			double[] temp = MENS_SIZE[MENS_SIZE.length - 1];
+			return temp[temp.length - 1];
 		} else {
 			for (double[] shoes: WOMENS_SIZE) {
 				if (shoes[1] >= footL) {
 					return shoes[0];
 				}
 			}
+			double[] temp = WOMENS_SIZE[WOMENS_SIZE.length - 1];
+			return temp[temp.length - 1];
 		}
-		return 0.0;
+//		return 0.0;
 	}
 
 	public void setShoeSize(double shoeSize) {
 		this.shoeSize = shoeSize;
+	}
+	
+	public String getShoeURL() {
+//		ArrayList<String> results = new ArrayList<String>();
+//		String temp1 = "";
+		try {
+			Map<String, String> temp = googleTest.googleSearch("basketball" + " shoe " + shoeSize);
+			Set<Map.Entry<String, String>> tempS = temp.entrySet();
+			for (Map.Entry<String, String> entry: tempS) {
+				if (entry.getKey().toLowerCase().contains("amazon")) {
+//					results.add(entry.getValue());
+					return entry.getValue();
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		return "http://www.google.com/";
+		
+	}
+}
+
+class googleTest {
+	
+	
+	public void getPanel() throws MalformedURLException, IOException {
+		
+		JFXPanel panel = new JFXPanel();
+		Platform.runLater( () -> {
+			WebView webView = new WebView();
+			webView.getEngine().load("http://www.google.com");
+			panel.setScene(new Scene(webView));
+		});
+	}
+
+	
+	
+	public static Map<String, String> googleSearch(String search) throws UnsupportedEncodingException, IOException {
+		String google = "http://www.google.com/search?q=";
+//		String search = "stackoverflow";
+		String charset = "UTF-8";
+		String userAgent = "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"; // Change this to your company's name and bot homepage!
+		Map<String, String> results = new HashMap<String, String>();
+		ArrayList<String> returnResult = new ArrayList<String>();
+		
+		Elements links = Jsoup.connect(google + URLEncoder.encode(search, charset)).userAgent(userAgent).get().select(".g>.r>a");
+
+		for (Element link : links) {
+		    String title = link.text();
+		    String url = link.absUrl("href");
+		    url = URLDecoder.decode(url.substring(url.indexOf('=') + 1, url.indexOf('&')), "UTF-8");
+
+		    if (!url.startsWith("http")) {
+		        continue;
+		    }
+		    results.put(title,  url);
+		}
+		return results;
 	}
 }
 
