@@ -7,5 +7,7 @@
 	<classpathentry kind="lib" path="webcamAPI/slf4j-nop-1.7.26-sources.jar"/>
 	<classpathentry kind="lib" path="webcamAPI/slf4j-nop-1.7.26.jar"/>
 	<classpathentry kind="lib" path="webcamAPI/webcam-capture-0.3.10.jar"/>
+	<classpathentry kind="lib" path="otherAPI/jsoup/jsoup-1.11.3.jar"/>
+	<classpathentry kind="lib" path="otherAPI/frostwire/dist/fw-jwebbrowser.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

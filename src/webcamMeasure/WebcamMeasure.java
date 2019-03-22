@@ -38,9 +38,9 @@ public class WebcamMeasure {
 	private static int counter;
 	private static Writer wr;
 	private static final int THRESHOLD = 50;
-	private static final int DISTANCE_WIDTH = 12; //Distance in inches
-	private static final int DISTANCE_TO_MEASURE = 12; //Distance in inches
-
+	private static final double DISTANCE_WIDTH = 9.35; //Distance in inches
+	private static final double DISTANCE_TO_MEASURE = 9.25; //Distance in inches
+	
 	public static void main(String[] args) throws InterruptedException, IOException {
 		try {
 		Scanner in = new Scanner(new File("counter.txt"));
@@ -77,7 +77,7 @@ public class WebcamMeasure {
 		}
 		
 		
-		JFrame webcamPanel = new JFrame("Webcam Viewer Panel");
+		JFrame webcamFrame = new JFrame("Webcam Viewer Panel");
 		JPanel captureP = new JPanel();
 		JPanel captureP1 = new JPanel();
 		JButton capture = new JButton("Side View");
@@ -102,7 +102,7 @@ public class WebcamMeasure {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				response.setText("Image Captured");
-				image = webcamPanel.getImage();
+				image = webcam.getImage();
 				try {
 					int[] results = measureDistance(image);
 					System.out.printf("PIXELS%nLength: %d%nHeight: %d%nINCHES%nLength: %f%nWidth: %f",results[0], results[1],pixToInchL(results[0]),pixToInchW(results[1]));
@@ -161,7 +161,7 @@ public class WebcamMeasure {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				response1.setText("Image Captured");
-				image = webcamPanel.getImage();
+				image = webcam.getImage();
 				try {
 					int[] results = measureDistance(image);
 					System.out.printf("PIXELS%nLength: %d%nHeight: %d%nINCHES%nLength: %f%nWidth: %f",results[0], results[1],pixToInchL(results[0]),pixToInchW(results[1]));
@@ -215,7 +215,7 @@ public class WebcamMeasure {
 				}
 			}
 		});
-		webcamPanel.addWindowListener(new WindowAdapter() {
+		webcamFrame.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
 				try {
 					wr = new FileWriter("counter.txt");
@@ -228,7 +228,7 @@ public class WebcamMeasure {
 				
 			}
 		});
-		webcamPanel.setLayout(new FlowLayout());
+		webcamFrame.setLayout(new FlowLayout());
 		
 		captureP.add(capture);
 		captureP.add(response);
@@ -238,13 +238,13 @@ public class WebcamMeasure {
 		captureP1.add(response1);
 		captureP1.add(save1);
 		
-		webcamPanel.add(panel);
-		webcamPanel.add(captureP);
-		webcamPanel.add(captureP1);
-		webcamPanel.setResizable(true);
-		webcamPanel.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		webcamPanel.pack();
-		webcamPanel.setVisible(true);
+		webcamFrame.add(panel);
+		webcamFrame.add(captureP);
+		webcamFrame.add(captureP1);
+		webcamFrame.setResizable(true);
+		webcamFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		webcamFrame.pack();
+		webcamFrame.setVisible(true);
 //		System.out.println("3  " + counter);
 	}
 	public static int[] measureDistance(Image img) throws IOException {
@@ -324,8 +324,8 @@ public class WebcamMeasure {
 	}
 	
 	public static double getHeight() {
-		double diagonal = DISTANCE_TO_MEASURE * Math.tan(68.5/2);
-		return 2*(Math.sqrt(Math.pow(diagonal, 2) + Math.pow((double)DISTANCE_WIDTH, 2)));
+		double diagonal = DISTANCE_TO_MEASURE * Math.tan(Math.toRadians(68.5/2));
+		return 2*(Math.sqrt(Math.pow(diagonal, 2) + Math.pow((double)DISTANCE_WIDTH/2, 2)));
 	}
 	
 	public static double pixToInchL(int px) {
@@ -368,3 +368,4 @@ public class WebcamMeasure {
 	    return bimage;
 	}
 }
+
