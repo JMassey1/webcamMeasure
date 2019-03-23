@@ -38,7 +38,7 @@ public class googleTest1 {
 		JFXPanel panel = new JFXPanel();
 		Platform.runLater( () -> {
 			WebView webView = new WebView();
-			webView.getEngine().load("http://www.google.com");
+			webView.getEngine().load("https://www.amazon.com/Basketball-6-5-Team-Sports/s?rh=n%3A679260011%2Cp_n_size_browse-vebin%3A1285095011");
 			panel.setScene(new Scene(webView));
 		});
 		frame.add(panel);

@@ -179,6 +179,7 @@ public class noCam {
 					newWindow.add(panel);
 					newWindow.setResizable(true);
 					newWindow.setVisible(true);
+					System.out.printf("%n%n%n%n%s%n%n%n%n", shoeSize.getShoeURL());
 					newWindow.add(new JLabel(shoeSize.getShoeURL() + "////" + Double.toString(shoeSize.getShoeSize())));
 //					newWindow.add(new JLabel(Double.toString(shoeSize.getShoeSize())));
 				} catch (IOException e1) {
@@ -218,14 +219,9 @@ public class noCam {
 		captureP.add(response);
 		captureP.add(save);
 		
-//		captureP1.add(capture1);
-//		captureP1.add(response1);
-//		captureP1.add(save1);
-		
 		webcamFrame.add(panel);
 		webcamFrame.add(captureP);
-		webcamFrame.add(gender);
-//		webcamFrame.add(captureP1);
+		webcamFrame.add(gender);;
 		webcamFrame.setResizable(true);
 		webcamFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		webcamFrame.pack();
@@ -279,28 +275,6 @@ public class noCam {
 		}
 		return temp;
 	}
-	
-/*
-//	public static BufferedImage makeGrayscale(BufferedImage original) {
-//		BufferedImage result = new BufferedImage(original.getWidth(), original.getHeight(), BufferedImage.TYPE_INT_RGB);
-//		Graphics2D graphics = result.createGraphics();
-//		graphics.drawImage(original, 0, 0, Color.WHITE, null);
-//		
-//		for (int i = 0; i < result.getHeight(); i++) {
-//			for (int w = 0; w < result.getWidth(); w++) {
-//				Color c = new Color(result.getRGB(w,i));
-//				int red = (int)(c.getRed() * 0.299);
-//				System.out.println("FIRST COLOR: " + red);
-//				System.out.println("SECOND COLOR: " + getRed(result.getRGB(w, i)));
-//				int green = (int) (c.getGreen() * 0.587);
-//				int blue = (int) (c.getBlue() * 0.114);
-//				Color newColor = new Color(red+green+blue,red+green+blue,red+green+blue);
-//				result.setRGB(w, i, newColor.getRGB());
-//			}
-//		}
-//		return result;
-//	} 
-*/
 	//CHANGES PIXEL TO GRAYSCALE USING BIT SHIFTS AND AVERAGE PIXEL COLORS
 	public static int makeGrayPix(int pix) {
 		int alpha = getAlpha(pix);
