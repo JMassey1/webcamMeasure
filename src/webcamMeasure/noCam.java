@@ -2,14 +2,19 @@ package webcamMeasure;
 
 import java.awt.Color;
 import java.awt.Desktop;
+import java.awt.Desktop.Action;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
@@ -27,6 +32,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.imageio.ImageIO;
+import javax.swing.AbstractAction;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -34,6 +40,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JToggleButton;
+import javax.swing.KeyStroke;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -45,6 +53,8 @@ import com.github.sarxos.webcam.WebcamResolution;
 import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
 import javafx.scene.Scene;
+import javafx.scene.layout.VBox;
+import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 
 public class noCam {
@@ -65,14 +75,15 @@ public class noCam {
 	
 	public static void main(String[] args) throws InterruptedException, IOException {
 		
-		java.util.List<Webcam> tempList = Webcam.getWebcams();
-		Webcam webcam = tempList.get(tempList.size()-1);
-		webcam.setViewSize(WebcamResolution.VGA.getSize());
-		System.out.println(WebcamResolution.VGA.getSize());
-		WebcamPanel panel = new WebcamPanel(webcam);
-		panel.setFPSDisplayed(true);
-		panel.setDisplayDebugInfo(true);
-		panel.setMirrored(true);
+//		System.setProperty("java.net.useSystemProxies", "true");
+//		java.util.List<Webcam> tempList = Webcam.getWebcams();
+//		Webcam webcam = tempList.get(tempList.size()-1);
+//		webcam.setViewSize(WebcamResolution.VGA.getSize());
+//		System.out.println(WebcamResolution.VGA.getSize());
+//		WebcamPanel panel = new WebcamPanel(webcam);
+//		panel.setFPSDisplayed(true);
+//		panel.setDisplayDebugInfo(true);
+//		panel.setMirrored(true);
 		
 
 		JFrame webcamFrame = new JFrame("Webcam Viewer Panel");
@@ -119,8 +130,8 @@ public class noCam {
 				} catch (IOException e2) {
 					// TODO Auto-generated catch block
 					e2.printStackTrace();
-					image = webcam.getImage();
-					System.out.println("CAMERA PICTURE CAMERA PICTURE CAMERA PICTURE");
+//					image = webcam.getImage();
+//					System.out.println("CAMERA PICTURE CAMERA PICTURE CAMERA PICTURE");
 				}
 				try {
 					int[] results = measureDistance(image);
@@ -173,15 +184,42 @@ public class noCam {
 					JFXPanel panel = new JFXPanel();
 					Platform.runLater( () -> {
 						WebView webView = new WebView();
+//						System.out.println("TESTTESTTESTTESTTESTEST");
 						webView.getEngine().load(shoeSize.getShoeURL());
 						panel.setScene(new Scene(webView));
 					});
+					
+//					panel.show();
 					newWindow.add(panel);
+					newWindow.addKeyListener(new KeyListener() {
+						@Override
+						public void keyPressed(KeyEvent e) { 
+							if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+								newWindow.dispatchEvent(new WindowEvent(newWindow, WindowEvent.WINDOW_CLOSING));
+							}
+						}
+
+						@Override
+						public void keyReleased(KeyEvent arg0) {
+							// TODO Auto-generated method stub
+							
+						}
+
+						@Override
+						public void keyTyped(KeyEvent arg0) {
+							// TODO Auto-generated method stub
+							
+						}
+					});
+					newWindow.setTitle("WebPage");
 					newWindow.setResizable(true);
 					newWindow.setVisible(true);
+//					newWindow.setSize(100, 100);
+					Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+					newWindow.setSize(screen.width, screen.height);
+//					newWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 					System.out.printf("%n%n%n%n%s%n%n%n%n", shoeSize.getShoeURL());
-					newWindow.add(new JLabel(shoeSize.getShoeURL() + "////" + Double.toString(shoeSize.getShoeSize())));
-//					newWindow.add(new JLabel(Double.toString(shoeSize.getShoeSize())));
+//					newWindow.add(new JLabel(shoeSize.getShoeURL() + "////" + Double.toString(shoeSize.getShoeSize())));
 				} catch (IOException e1) {
 					e1.printStackTrace();
 				}
@@ -219,7 +257,7 @@ public class noCam {
 		captureP.add(response);
 		captureP.add(save);
 		
-		webcamFrame.add(panel);
+//		webcamFrame.add(panel);
 		webcamFrame.add(captureP);
 		webcamFrame.add(gender);;
 		webcamFrame.setResizable(true);
