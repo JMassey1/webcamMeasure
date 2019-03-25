@@ -2,7 +2,6 @@ package webcamMeasure;
 
 import java.awt.Color;
 import java.awt.Desktop;
-import java.awt.Desktop.Action;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -26,13 +25,11 @@ import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
 import javax.imageio.ImageIO;
-import javax.swing.AbstractAction;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -40,21 +37,13 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JToggleButton;
-import javax.swing.KeyStroke;
-
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import com.github.sarxos.webcam.Webcam;
-import com.github.sarxos.webcam.WebcamPanel;
-import com.github.sarxos.webcam.WebcamResolution;
-
 import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
 import javafx.scene.Scene;
-import javafx.scene.layout.VBox;
-import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 
 public class noCam {
@@ -74,30 +63,16 @@ public class noCam {
 	
 	
 	public static void main(String[] args) throws InterruptedException, IOException {
-		
-//		System.setProperty("java.net.useSystemProxies", "true");
-//		java.util.List<Webcam> tempList = Webcam.getWebcams();
-//		Webcam webcam = tempList.get(tempList.size()-1);
-//		webcam.setViewSize(WebcamResolution.VGA.getSize());
-//		System.out.println(WebcamResolution.VGA.getSize());
-//		WebcamPanel panel = new WebcamPanel(webcam);
-//		panel.setFPSDisplayed(true);
-//		panel.setDisplayDebugInfo(true);
-//		panel.setMirrored(true);
-		
 
 		JFrame webcamFrame = new JFrame("Webcam Viewer Panel");
 		JPanel captureP = new JPanel();
-//		JPanel captureP1 = new JPanel();
 		JButton capture = new JButton("Side View");
 		JButton capture1 = new JButton("Front View");
 		JLabel response = new JLabel();
 		JLabel response1 = new JLabel();
 		JRadioButton save = new JRadioButton("Save Picture");
-//		JRadioButton male = new JRadioButton("Male?");
 		JToggleButton gender = new JToggleButton("Male", true);
 		captureP.setLayout(new BoxLayout(captureP, BoxLayout.Y_AXIS));
-//		captureP1.setLayout(new BoxLayout(captureP1, BoxLayout.Y_AXIS));
 		
 		response.setText("Press to Capture");
 		response1.setText("Press to Capture");
@@ -128,16 +103,12 @@ public class noCam {
 				try {
 					image = ImageIO.read(new File("testimage.png"));
 				} catch (IOException e2) {
-					// TODO Auto-generated catch block
 					e2.printStackTrace();
-//					image = webcam.getImage();
-//					System.out.println("CAMERA PICTURE CAMERA PICTURE CAMERA PICTURE");
 				}
 				try {
 					int[] results = measureDistance(image);
-					shoeSize = new Shoe(results, true);
+					shoeSize = new Shoe(results, isMale);
 					int heightFromGround = image.getHeight() - results[1];
-//					double shoesize = shoeSize.getShoeSize();
 					System.out.printf("PIXELS%nLength: %d%nHeight: %d  (From Ground Up: %d)%nHeight Count: %d%nINCHES%nLength: %f%nWidth: %f%nShoe Size: %f",
 							results[0], results[1], heightFromGround, results[2], pixToInchL(results[0]),pixToInchW(results[2]), shoeSize.getShoeSize());
 					JFrame resultsF = new JFrame("Side View");
@@ -175,7 +146,6 @@ public class noCam {
 					
 					resultsF.add(text);
 					resultsF.setResizable(true);
-//					resultsF.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 					resultsF.pack();
 					resultsF.setVisible(true);
 					
@@ -184,12 +154,10 @@ public class noCam {
 					JFXPanel panel = new JFXPanel();
 					Platform.runLater( () -> {
 						WebView webView = new WebView();
-//						System.out.println("TESTTESTTESTTESTTESTEST");
 						webView.getEngine().load(shoeSize.getShoeURL());
 						panel.setScene(new Scene(webView));
 					});
 					
-//					panel.show();
 					newWindow.add(panel);
 					newWindow.addKeyListener(new KeyListener() {
 						@Override
@@ -200,26 +168,17 @@ public class noCam {
 						}
 
 						@Override
-						public void keyReleased(KeyEvent arg0) {
-							// TODO Auto-generated method stub
-							
-						}
+						public void keyReleased(KeyEvent arg0) {}
 
 						@Override
-						public void keyTyped(KeyEvent arg0) {
-							// TODO Auto-generated method stub
-							
-						}
+						public void keyTyped(KeyEvent arg0) {}
 					});
 					newWindow.setTitle("WebPage");
 					newWindow.setResizable(true);
 					newWindow.setVisible(true);
-//					newWindow.setSize(100, 100);
 					Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
 					newWindow.setSize(screen.width, screen.height);
-//					newWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 					System.out.printf("%n%n%n%n%s%n%n%n%n", shoeSize.getShoeURL());
-//					newWindow.add(new JLabel(shoeSize.getShoeURL() + "////" + Double.toString(shoeSize.getShoeSize())));
 				} catch (IOException e1) {
 					e1.printStackTrace();
 				}
@@ -257,23 +216,17 @@ public class noCam {
 		captureP.add(response);
 		captureP.add(save);
 		
-//		webcamFrame.add(panel);
 		webcamFrame.add(captureP);
 		webcamFrame.add(gender);;
 		webcamFrame.setResizable(true);
 		webcamFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		webcamFrame.pack();
 		webcamFrame.setVisible(true);
-//		System.out.println("3  " + counter);
 	}
 	public static int[] measureDistance(Image img) throws IOException {
 		BufferedImage grayImg = makeGrayscale(img);
-//		ImageIO.write(grayImg, "PNG", new File("rendere20.png"));
 		Graphics2D grayImgGraphics = grayImg.createGraphics();
 		grayImgGraphics.drawImage(grayImg, 0, 0, Color.WHITE, null);
-//		grayImgGraphics.drawOval(10, 10, 1000, 10);
-//		RenderedImage renderedImage = (RenderedImage)grayImg;
-//		ImageIO.write(renderedImage, "PNG", new File("rendered.png"));
 		int pixel,count,max,height, heightCount = 1;
 		max = 0;
 		height = 0;
@@ -294,6 +247,7 @@ public class noCam {
 			}
 		}
 		return new int[] {max,height,heightCount};
+		//max is the length of the object, height is how far it first occurs, heighCount is how tall it is
 	}
 	
 	//GIVEN ORIGINAL PICTURE, TURNS IT TO GRAYSCALE
@@ -306,9 +260,7 @@ public class noCam {
 		for (int x = 0; x < w; x++) {
 			for (int y = 0; y < h; y++) {
 				int pixel = original.getRGB(x, y);
-//				System.out.println("FIRST: " + pixel);
 				temp.setRGB(x, y, makeGrayPix(pixel));
-//				System.out.println("SECOND " + makeGrayPix(pixel) + "/n");
 			}
 		}
 		return temp;
@@ -323,10 +275,10 @@ public class noCam {
 		return ((alpha<<24) | (avg<<16) | (avg<<8) | avg);
 	}
 	
-	public static double getHeight() {
-		double diagonal = DISTANCE_TO_MEASURE * Math.tan(Math.toRadians(68.5/2));
-		return 2*(Math.sqrt(Math.pow(diagonal, 2) - Math.pow((double)DISTANCE_WIDTH/2, 2)));
-	}
+//	public static double getHeight() {
+//		double diagonal = DISTANCE_TO_MEASURE * Math.tan(Math.toRadians(68.5/2));
+//		return 2*(Math.sqrt(Math.pow(diagonal, 2) - Math.pow((double)DISTANCE_WIDTH/2, 2)));
+//	}
 	
 	public static double pixToInchL(int px) {
 		return (((double)px)*DISTANCE_WIDTH/PIX_WIDTH_CUSTOM);
@@ -397,6 +349,7 @@ class Shoe {
 	}
 	
 	public double getShoeSize() {
+		if (footH > footW) {}
 		if (this.manOrWoman) {
 			for (double[] shoes: MENS_SIZE) {
 				if (shoes[1] >= footL) {
@@ -414,7 +367,6 @@ class Shoe {
 			double[] temp = WOMENS_SIZE[WOMENS_SIZE.length - 1];
 			return temp[temp.length - 1];
 		}
-//		return 0.0;
 	}
 
 	public void setShoeSize(double shoeSize) {
@@ -422,14 +374,11 @@ class Shoe {
 	}
 	
 	public String getShoeURL() {
-//		ArrayList<String> results = new ArrayList<String>();
-//		String temp1 = "";
 		try {
 			Map<String, String> temp = googleTest.googleSearch("basketball" + " shoe " + shoeSize);
 			Set<Map.Entry<String, String>> tempS = temp.entrySet();
 			for (Map.Entry<String, String> entry: tempS) {
 				if (entry.getKey().toLowerCase().contains("amazon")) {
-//					results.add(entry.getValue());
 					return entry.getValue();
 				}
 			}
@@ -459,11 +408,10 @@ class googleTest {
 	
 	public static Map<String, String> googleSearch(String search) throws UnsupportedEncodingException, IOException {
 		String google = "http://www.google.com/search?q=";
-//		String search = "stackoverflow";
 		String charset = "UTF-8";
 		String userAgent = "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"; // Change this to your company's name and bot homepage!
 		Map<String, String> results = new HashMap<String, String>();
-		ArrayList<String> returnResult = new ArrayList<String>();
+//		ArrayList<String> returnResult = new ArrayList<String>();
 		
 		Elements links = Jsoup.connect(google + URLEncoder.encode(search, charset)).userAgent(userAgent).get().select(".g>.r>a");
 

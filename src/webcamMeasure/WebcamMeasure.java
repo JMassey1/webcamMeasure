@@ -38,8 +38,8 @@ public class WebcamMeasure {
 	private static int counter;
 	private static Writer wr;
 	private static final int THRESHOLD = 50;
-	private static final double DISTANCE_WIDTH = 9.35; //Distance in inches
-	private static final double DISTANCE_TO_MEASURE = 9.25; //Distance in inches
+	private static final double DISTANCE_WIDTH = 9.35; //Distance in inches from left to right
+	private static final double DISTANCE_TO_MEASURE = 9.25; //Distance in inches from camera to surface
 	
 	public static void main(String[] args) throws InterruptedException, IOException {
 		try {
@@ -123,7 +123,7 @@ public class WebcamMeasure {
 					pixel1.setText("Length: " + Integer.toString(results[0]) + " px");
 					pixel2.setText("Height: " + Integer.toString(results[1]) + " px");
 					inch1.setText("Length: " + Double.toString(pixToInchL(results[0])) + " in");
-					inch2.setText("Height: " + Double.toString(pixToInchW(results[1])) + " in");
+					inch2.setText("Height: " + Double.toString(pixToInchW(results[1]),) + " in");
 					filler.setText("\n");
 					text.add(pixelM);
 					text.add(pixel1);
@@ -292,27 +292,6 @@ public class WebcamMeasure {
 		return temp;
 	}
 	
-/*
-//	public static BufferedImage makeGrayscale(BufferedImage original) {
-//		BufferedImage result = new BufferedImage(original.getWidth(), original.getHeight(), BufferedImage.TYPE_INT_RGB);
-//		Graphics2D graphics = result.createGraphics();
-//		graphics.drawImage(original, 0, 0, Color.WHITE, null);
-//		
-//		for (int i = 0; i < result.getHeight(); i++) {
-//			for (int w = 0; w < result.getWidth(); w++) {
-//				Color c = new Color(result.getRGB(w,i));
-//				int red = (int)(c.getRed() * 0.299);
-//				System.out.println("FIRST COLOR: " + red);
-//				System.out.println("SECOND COLOR: " + getRed(result.getRGB(w, i)));
-//				int green = (int) (c.getGreen() * 0.587);
-//				int blue = (int) (c.getBlue() * 0.114);
-//				Color newColor = new Color(red+green+blue,red+green+blue,red+green+blue);
-//				result.setRGB(w, i, newColor.getRGB());
-//			}
-//		}
-//		return result;
-//	} 
-*/
 	//CHANGES PIXEL TO GRAYSCALE USING BIT SHIFTS AND AVERAGE PIXEL COLORS
 	public static int makeGrayPix(int pix) {
 		int alpha = getAlpha(pix);
@@ -323,10 +302,10 @@ public class WebcamMeasure {
 		return ((alpha<<24) | (avg<<16) | (avg<<8) | avg);
 	}
 	
-	public static double getHeight() {
-		double diagonal = DISTANCE_TO_MEASURE * Math.tan(Math.toRadians(68.5/2));
-		return 2*(Math.sqrt(Math.pow(diagonal, 2) + Math.pow((double)DISTANCE_WIDTH/2, 2)));
-	}
+//	public static double getHeight() {
+//		double diagonal = DISTANCE_TO_MEASURE * Math.tan(Math.toRadians(68.5/2));
+//		return 2*(Math.sqrt(Math.pow(diagonal, 2) + Math.pow((double)DISTANCE_WIDTH/2, 2)));
+//	}
 	
 	public static double pixToInchL(int px) {
 		return (((double)px)*DISTANCE_WIDTH/640);
