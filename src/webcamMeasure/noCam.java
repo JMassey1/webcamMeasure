@@ -22,7 +22,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
-import java.net.MalformedURLException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.HashMap;
@@ -159,20 +158,30 @@ public class noCam {
 					});
 					
 					newWindow.add(panel);
+					newWindow.setFocusable(true);
+					newWindow.requestFocus();
 					newWindow.addKeyListener(new KeyListener() {
 						@Override
 						public void keyPressed(KeyEvent e) { 
-							if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+							if (e.getKeyCode() == KeyEvent.VK_ESCAPE && e.getModifiers() == 0) {
 								newWindow.dispatchEvent(new WindowEvent(newWindow, WindowEvent.WINDOW_CLOSING));
+//								newWindow.close();
+								
 							}
+//							System.out.println("Testtesttestsetsetes");
 						}
 
 						@Override
-						public void keyReleased(KeyEvent arg0) {}
+						public void keyReleased(KeyEvent arg0) {
+//							System.out.println("TESTTESTTEST");
+						}
 
 						@Override
-						public void keyTyped(KeyEvent arg0) {}
+						public void keyTyped(KeyEvent arg0) {
+							
+						}
 					});
+					System.out.println(newWindow.getKeyListeners());
 					newWindow.setTitle("WebPage");
 					newWindow.setResizable(true);
 					newWindow.setVisible(true);
@@ -275,10 +284,6 @@ public class noCam {
 		return ((alpha<<24) | (avg<<16) | (avg<<8) | avg);
 	}
 	
-//	public static double getHeight() {
-//		double diagonal = DISTANCE_TO_MEASURE * Math.tan(Math.toRadians(68.5/2));
-//		return 2*(Math.sqrt(Math.pow(diagonal, 2) - Math.pow((double)DISTANCE_WIDTH/2, 2)));
-//	}
 	
 	public static double pixToInchL(int px) {
 		return (((double)px)*DISTANCE_WIDTH/PIX_WIDTH_CUSTOM);
@@ -328,28 +333,17 @@ class Shoe {
 	private static final double[][] WOMENS_SIZE = new double[][] {{6.0,8.75},{6.5,9.0},{7.0,9.25},{7.5,9.375},{8.0,9.5},{8.5,9.75},{9.0,9.875},{9.5,10.0},{10.0,10.2},{10.5,10.35},{11,10.5}};
 	private double footL;
 	private double footW;
-	private double footH;
 	private double shoeSize;
 	boolean manOrWoman; //True if Man, False if Woman
-	
-	public Shoe(int footL, int footW, int footH, boolean manOrWoman) {
-		this.footL = (double)footL;
-		this.footW = (double)footW;
-		this.footH = (double)footH;
-		this.manOrWoman = manOrWoman;
-		shoeSize = getShoeSize();
-	}
 	
 	public Shoe(int[] foot, boolean manOrWoman) {
 		footL = (double)foot[0];
 		footW = (double)foot[1];
-		footH = (double)foot[2];
 		this.manOrWoman = manOrWoman;
 		shoeSize = getShoeSize();
 	}
 	
 	public double getShoeSize() {
-		if (footH > footW) {}
 		if (this.manOrWoman) {
 			for (double[] shoes: MENS_SIZE) {
 				if (shoes[1] >= footL) {
@@ -375,9 +369,10 @@ class Shoe {
 	
 	public String getShoeURL() {
 		try {
+//			Map<String, String> temp = googleTest.googleSearch("basketball" + " shoe " + "\"" + shoeSize + "\"" + "\"" + footW + " width \"");
 			Map<String, String> temp = googleTest.googleSearch("basketball" + " shoe " + shoeSize);
 			Set<Map.Entry<String, String>> tempS = temp.entrySet();
-			for (Map.Entry<String, String> entry: tempS) {
+			for (Map.Entry<String, String> entry: tempS) { 
 				if (entry.getKey().toLowerCase().contains("amazon")) {
 					return entry.getValue();
 				}
@@ -392,19 +387,6 @@ class Shoe {
 }
 
 class googleTest {
-	
-	
-	public void getPanel() throws MalformedURLException, IOException {
-		
-		JFXPanel panel = new JFXPanel();
-		Platform.runLater( () -> {
-			WebView webView = new WebView();
-			webView.getEngine().load("http://www.google.com");
-			panel.setScene(new Scene(webView));
-		});
-	}
-
-	
 	
 	public static Map<String, String> googleSearch(String search) throws UnsupportedEncodingException, IOException {
 		String google = "http://www.google.com/search?q=";

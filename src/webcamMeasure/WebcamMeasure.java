@@ -1,22 +1,27 @@
 package webcamMeasure;
 
 import java.awt.Color;
-import java.awt.Desktop;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.Writer;
-import java.util.Scanner;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 
 import javax.imageio.ImageIO;
 import javax.swing.BoxLayout;
@@ -26,38 +31,31 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
 import com.github.sarxos.webcam.Webcam;
 import com.github.sarxos.webcam.WebcamPanel;
 import com.github.sarxos.webcam.WebcamResolution;
+
+import javafx.application.Platform;
+import javafx.embed.swing.JFXPanel;
+import javafx.scene.Scene;
+import javafx.scene.web.WebView;
 
 public class WebcamMeasure {
 	
 	private static BufferedImage image;
 	private static File picture;
-	private static Desktop desktop;
-	private static int counter;
-	private static Writer wr;
+	private static UserShoe shoeSize;
+	private static boolean isMale;
 	private static final int THRESHOLD = 50;
-	private static final double DISTANCE_WIDTH = 9.35; //Distance in inches from left to right
-	private static final double DISTANCE_TO_MEASURE = 9.25; //Distance in inches from camera to surface
+	private static final double DISTANCE_WIDTH = 12.5; //Distance in inches from left to right
+	//private static final double DISTANCE_TO_MEASURE = 9.25; //Distance in inches from camera to surface
 	
 	public static void main(String[] args) throws InterruptedException, IOException {
-		try {
-		Scanner in = new Scanner(new File("counter.txt"));
-		if (!in.hasNext()) {
-		String temp = in.nextLine();
-		counter = Integer.parseInt(temp);
-		System.out.println(temp);
-		} else {
-			counter = 0; 		
-		}
-		in.close();
-		} catch(FileNotFoundException e) {
-			Writer tempWr = new FileWriter("counter.txt");
-			tempWr.write(Integer.toString(0));
-			tempWr.close();
-		}
-		
+
 		
 		java.util.List<Webcam> tempList = Webcam.getWebcams();
 		Webcam webcam = tempList.get(tempList.size()-1);
@@ -67,14 +65,6 @@ public class WebcamMeasure {
 		panel.setFPSDisplayed(true);
 		panel.setDisplayDebugInfo(true);
 		panel.setMirrored(true);
-		
-		
-		//getting Desktop
-		if (!Desktop.isDesktopSupported()) {
-			System.out.println("Desktop not supported");
-		} else {
-			desktop = Desktop.getDesktop();
-		}
 		
 		
 		JFrame webcamFrame = new JFrame("Webcam Viewer Panel");
@@ -103,9 +93,16 @@ public class WebcamMeasure {
 			public void actionPerformed(ActionEvent arg0) {
 				response.setText("Image Captured");
 				image = webcam.getImage();
-				try {
-					int[] results = measureDistance(image);
-					System.out.printf("PIXELS%nLength: %d%nHeight: %d%nINCHES%nLength: %f%nWidth: %f",results[0], results[1],pixToInchL(results[0]),pixToInchW(results[1]));
+					int[] results;
+					try {
+						results = measureDistance(image);
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+						results = new int[] {0,0,0};
+					}
+					shoeSize = new UserShoe(results, isMale);
+					System.out.printf("PIXELS%nLength: %d%nHeight: %d%nINCHES%nLength: %f%nWidth: %f",results[0], results[1],pixToInchL(results[0]),pixToInchW(results[1],results[2]));
 					JFrame resultsF = new JFrame("Side View");
 					JPanel text = new JPanel();
 					text.setLayout(new BoxLayout(text, BoxLayout.Y_AXIS));
@@ -123,7 +120,7 @@ public class WebcamMeasure {
 					pixel1.setText("Length: " + Integer.toString(results[0]) + " px");
 					pixel2.setText("Height: " + Integer.toString(results[1]) + " px");
 					inch1.setText("Length: " + Double.toString(pixToInchL(results[0])) + " in");
-					inch2.setText("Height: " + Double.toString(pixToInchW(results[1]),) + " in");
+					inch2.setText("Height: " + Double.toString(pixToInchW(results[1],results[2])) + " in");
 					filler.setText("\n");
 					text.add(pixelM);
 					text.add(pixel1);
@@ -138,18 +135,59 @@ public class WebcamMeasure {
 //					resultsF.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 					resultsF.pack();
 					resultsF.setVisible(true);
-				} catch (IOException e1) {
-					e1.printStackTrace();
-				}
+					
+					JFrame newWindow = new JFrame();
+					JFXPanel panel = new JFXPanel();
+					Platform.runLater( () -> {
+						WebView webView = new WebView();
+						webView.getEngine().load(shoeSize.getShoeURL());
+						panel.setScene(new Scene(webView));
+					});
+					System.out.println(shoeSize.getShoeURL());
+					newWindow.add(panel);
+					newWindow.setFocusable(true);
+					newWindow.requestFocus();
+					newWindow.addKeyListener(new KeyListener() {
+
+						@Override
+						public void keyTyped(java.awt.event.KeyEvent e) {
+							if (e.getKeyCode() == KeyEvent.VK_ESCAPE && e.getModifiers() == 0)
+								newWindow.dispatchEvent(new WindowEvent(newWindow, WindowEvent.WINDOW_CLOSING));
+						}
+
+						@Override
+						public void keyPressed(java.awt.event.KeyEvent e) {
+							// TODO Auto-generated method stub
+							
+						}
+
+						@Override
+						public void keyReleased(java.awt.event.KeyEvent e) {
+							// TODO Auto-generated method stub
+							
+						}
+						
+					});
+					System.out.println(newWindow.getKeyListeners());
+					newWindow.setTitle("WebPage");
+					newWindow.setVisible(true);
+					Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+					newWindow.setSize(screen.width, screen.height);
 				if (save.isSelected()) {
 					try {
-						System.out.println("4  " + counter);
-						picture = new File("side" + counter + ".png");
+						String fileName;
+						File tempFile;
+						boolean isThere;
+						Random r = new Random();
+						do {
+							fileName = Integer.toString(r.nextInt(10000000));
+							tempFile = File.createTempFile(fileName, ".png");
+							isThere = tempFile.exists();
+							System.out.println(fileName);
+						} while (!isThere);
+						picture = new File(fileName + ".png");
 						ImageIO.write(image, "PNG", picture);
-						desktop.open(picture);
-						counter++;
 						response.setText("Press to Capture");
-						System.out.println("5  " + counter);
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
@@ -164,7 +202,7 @@ public class WebcamMeasure {
 				image = webcam.getImage();
 				try {
 					int[] results = measureDistance(image);
-					System.out.printf("PIXELS%nLength: %d%nHeight: %d%nINCHES%nLength: %f%nWidth: %f",results[0], results[1],pixToInchL(results[0]),pixToInchW(results[1]));
+					System.out.printf("PIXELS%nLength: %d%nHeight: %d%nINCHES%nLength: %f%nWidth: %f",results[0], results[1],pixToInchL(results[0]),pixToInchW(results[1],results[2]));
 					JFrame resultsF = new JFrame("Front View");
 					JPanel text = new JPanel();
 					text.setLayout(new BoxLayout(text, BoxLayout.Y_AXIS));
@@ -182,7 +220,7 @@ public class WebcamMeasure {
 					pixel1.setText("Length: " + Integer.toString(results[0]) + " px");
 					pixel2.setText("Height: " + Integer.toString(results[1]) + " px");
 					inch1.setText("Length: " + Double.toString(pixToInchL(results[0])) + " in");
-					inch2.setText("Height: " + Double.toString(pixToInchW(results[1])) + " in");
+					inch2.setText("Height: " + Double.toString(pixToInchW(results[1],results[2])) + " in");
 					filler.setText("\n");
 					text.add(pixelM);
 					text.add(pixel1);
@@ -202,30 +240,23 @@ public class WebcamMeasure {
 				}
 				if (save1.isSelected()) {
 					try {
-						System.out.println("4  " + counter);
-						picture = new File("front" + counter + ".png");
+						String fileName;
+						File tempFile;
+						boolean isThere;
+						Random r = new Random();
+						do {
+//							fileName = Integer.toString(0 + (int)(Math.random() + 1) * 100000);
+							fileName = "a" + Integer.toString(r.nextInt(10000000));
+							tempFile = File.createTempFile(fileName, ".png");
+							isThere = tempFile.exists();
+						} while (!isThere);
+						picture = new File(fileName + ".png");
 						ImageIO.write(image, "PNG", picture);
-						desktop.open(picture);
-						counter++;
-						response1.setText("Press to Capture");
-						System.out.println("5  " + counter);
+						response.setText("Press to Capture");
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
 				}
-			}
-		});
-		webcamFrame.addWindowListener(new WindowAdapter() {
-			public void windowClosing(WindowEvent e) {
-				try {
-					wr = new FileWriter("counter.txt");
-					wr.write(Integer.toString(counter));
-					wr.close();
-				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-				
 			}
 		});
 		webcamFrame.setLayout(new FlowLayout());
@@ -249,13 +280,9 @@ public class WebcamMeasure {
 	}
 	public static int[] measureDistance(Image img) throws IOException {
 		BufferedImage grayImg = makeGrayscale(img);
-//		ImageIO.write(grayImg, "PNG", new File("rendere20.png"));
 		Graphics2D grayImgGraphics = grayImg.createGraphics();
 		grayImgGraphics.drawImage(grayImg, 0, 0, Color.WHITE, null);
-//		grayImgGraphics.drawOval(10, 10, 1000, 10);
-//		RenderedImage renderedImage = (RenderedImage)grayImg;
-//		ImageIO.write(renderedImage, "PNG", new File("rendered.png"));
-		int pixel,count,max,height;
+		int pixel,count,max,height,heightCount = 1;
 		max = 0;
 		height = 0;
 		for (int y = 0; y < grayImg.getHeight(); y++) {
@@ -269,9 +296,12 @@ public class WebcamMeasure {
 			if (count > max) {
 				max = count;
 				height = y;
+				heightCount = 1;
+			} else if (count == max) {
+				heightCount++;
 			}
 		}
-		return new int[] {max,height};
+		return new int[] {max,height, heightCount};
 	}
 	
 	//GIVEN ORIGINAL PICTURE, TURNS IT TO GRAYSCALE
@@ -284,9 +314,7 @@ public class WebcamMeasure {
 		for (int x = 0; x < w; x++) {
 			for (int y = 0; y < h; y++) {
 				int pixel = original.getRGB(x, y);
-//				System.out.println("FIRST: " + pixel);
 				temp.setRGB(x, y, makeGrayPix(pixel));
-//				System.out.println("SECOND " + makeGrayPix(pixel) + "/n");
 			}
 		}
 		return temp;
@@ -302,19 +330,14 @@ public class WebcamMeasure {
 		return ((alpha<<24) | (avg<<16) | (avg<<8) | avg);
 	}
 	
-//	public static double getHeight() {
-//		double diagonal = DISTANCE_TO_MEASURE * Math.tan(Math.toRadians(68.5/2));
-//		return 2*(Math.sqrt(Math.pow(diagonal, 2) + Math.pow((double)DISTANCE_WIDTH/2, 2)));
-//	}
 	
 	public static double pixToInchL(int px) {
 		return (((double)px)*DISTANCE_WIDTH/640);
 	}
-	public static double pixToInchW(int px) {
-		return (((double)px)*getHeight()/480);
+	public static double pixToInchW(int px, int hCount) {
+		return (((double)px)*hCount/480);
 	}
 	
-
 	public static boolean isWhite(int pixel) {
 		if (getRed(pixel) > THRESHOLD && getGreen(pixel) > THRESHOLD && getBlue(pixel) > THRESHOLD) {
 			return true;
@@ -348,3 +371,86 @@ public class WebcamMeasure {
 	}
 }
 
+class UserShoe {
+	//Size then Inches
+	private static final double[][] MENS_SIZE = new double[][]{{7.0,9.6},{7.5,9.75},{8.0,9.9},{8.5,10.125},{9.0,10.25},{9.5,10.4},{10.0,10.6},{10.5,10.75},{11.0,10.9},{11.5, 11.125},{12.0,11.25},{13.0,11.6}};
+	private static final double[][] WOMENS_SIZE = new double[][] {{6.0,8.75},{6.5,9.0},{7.0,9.25},{7.5,9.375},{8.0,9.5},{8.5,9.75},{9.0,9.875},{9.5,10.0},{10.0,10.2},{10.5,10.35},{11,10.5}};
+	private double footL;
+	private double footW;
+	private double shoeSize;
+	boolean manOrWoman; //True if Man, False if Woman
+	
+	public UserShoe(int[] foot, boolean manOrWoman) {
+		footL = (double)foot[0];
+		footW = (double)foot[1];
+		this.manOrWoman = manOrWoman;
+		shoeSize = getShoeSize();
+	}
+	
+	public double getShoeSize() {
+		if (this.manOrWoman) {
+			for (double[] shoes: MENS_SIZE) {
+				if (shoes[1] >= footL) {
+					return shoes[0];
+				}
+			}
+			double[] temp = MENS_SIZE[MENS_SIZE.length - 1];
+			return temp[temp.length - 1];
+		} else {
+			for (double[] shoes: WOMENS_SIZE) {
+				if (shoes[1] >= footL) {
+					return shoes[0];
+				}
+			}
+			double[] temp = WOMENS_SIZE[WOMENS_SIZE.length - 1];
+			return temp[temp.length - 1];
+		}
+	}
+
+	public void setShoeSize(double shoeSize) {
+		this.shoeSize = shoeSize;
+	}
+	
+	public String getShoeURL() {
+		try {
+//			Map<String, String> temp = googleTest.googleSearch("basketball" + " shoe " + "\"" + shoeSize + "\"" + "\"" + footW + " width \"");
+			Map<String, String> temp = searchGoogle.googleSearch("basketball shoe " + shoeSize);
+			Set<Map.Entry<String, String>> tempS = temp.entrySet();
+			for (Map.Entry<String, String> entry: tempS) { 
+				if (entry.getKey().toLowerCase().contains("amazon")) {
+					return entry.getValue();
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		return "http://www.google.com/";
+		
+	}
+}
+
+class searchGoogle {
+	
+	public static Map<String, String> googleSearch(String search) throws UnsupportedEncodingException, IOException {
+		String google = "http://www.google.com/search?q=";
+		String charset = "UTF-8";
+		String userAgent = "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"; // Change this to your company's name and bot homepage!
+		Map<String, String> results = new HashMap<String, String>();
+//		ArrayList<String> returnResult = new ArrayList<String>();
+		
+		Elements links = Jsoup.connect(google + URLEncoder.encode(search, charset)).userAgent(userAgent).get().select(".g>.r>a");
+
+		for (Element link : links) {
+		    String title = link.text();
+		    String url = link.absUrl("href");
+		    url = URLDecoder.decode(url.substring(url.indexOf('=') + 1, url.indexOf('&')), "UTF-8");
+
+		    if (!url.startsWith("http")) {
+		        continue;
+		    }
+		    results.put(title,  url);
+		}
+		return results;
+	}
+}
