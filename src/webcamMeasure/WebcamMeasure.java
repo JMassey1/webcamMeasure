@@ -1,6 +1,7 @@
 package webcamMeasure;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -24,12 +25,15 @@ import java.util.Random;
 import java.util.Set;
 
 import javax.imageio.ImageIO;
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.SwingConstants;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
@@ -46,6 +50,25 @@ import javafx.scene.web.WebView;
 
 public class WebcamMeasure {
 	
+	//VARIABLES FOR SURVEY
+	private static String[] gender = new String[] {"Male", "Female", "N/A"};
+	private static String[] sports = new String[] {"Volleyball", "Tennis", "Basketball", "Football","Baseball/Softball","Soccer","Running"};
+	private static String[] sportsSoccer = new String[] {};
+	private static String[] sportsFootball = new String[] {"Offensive Line", "Defensive Line", "Line Backer", "Defensive Back/ WR", "Running Back"};
+	private static String[] typeOfFieldSF = new String[] {"Grass", "Turf"};
+	private static String[] typeOfFieldV = new String[] {"Count", "Sand"};
+	private static String[] typeOfFieldR = new String[] {"Treadmill", "Track", "Concrete"};
+	
+	//ANSWERS FROM SURVEY AND BOOLEANS
+	private static String genderS;
+	private static String sportsS;
+	private static boolean isSoccer;
+	private static boolean isFootball;
+	private static String soccerPos;
+	private static String footballPos;
+	private static String fieldType;
+	
+	
 	private static BufferedImage image;
 	private static File picture;
 	private static UserShoe shoeSize;
@@ -55,7 +78,62 @@ public class WebcamMeasure {
 	//private static final double DISTANCE_TO_MEASURE = 9.25; //Distance in inches from camera to surface
 	
 	public static void main(String[] args) throws InterruptedException, IOException {
+		JFrame survey = new JFrame();
+		survey.setTitle("Pre-Measure Survey");
+		survey.setLayout(new FlowLayout());
+		survey.add(Box.createHorizontalStrut(20));
+		
+		JPanel questions = new JPanel();
+		questions.setLayout(new BoxLayout(questions, BoxLayout.Y_AXIS));
+		questions.add(new JLabel("Gender?", SwingConstants.CENTER));
+		
+		
+		JComboBox<String> genderSurvey = new JComboBox<String>(gender);
+		genderSurvey.setAlignmentX(SwingConstants.CENTER);
+		questions.add(genderSurvey);
+		questions.add(Box.createVerticalStrut(20));
+		genderSurvey.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				@SuppressWarnings("unchecked")
+				JComboBox<String> temp = (JComboBox<String>)e.getSource();
+				
+			}
+		});
+		questions.add(new JLabel("Sport?", SwingConstants.CENTER));
+		
+		JComboBox<String> sportsSurvey = new JComboBox<String>(sports);
+		sportsSurvey.setAlignmentX(SwingConstants.CENTER);
+		questions.add(sportsSurvey);
+		sportsSurvey.addActionListener(new ActionListener() {
 
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				@SuppressWarnings("unchecked")
+				JComboBox<String> temp = (JComboBox<String>)e.getSource();
+				if (temp.getSelectedItem().equals("Basketball")) {
+					questions.add(new JLabel("test"));
+				}
+			}
+			
+		});
+		questions.add(new JLabel("TEMP?", SwingConstants.CENTER));
+		
+		survey.add(questions);
+		survey.add(Box.createHorizontalStrut(20));
+		survey.setVisible(true);
+		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+		survey.setSize(screen.width,screen.height);
+//		survey.pack();
+		survey.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
+		program();
+		
+	}
+	
+	
+	public static void program() throws InterruptedException, IOException {
 		
 		java.util.List<Webcam> tempList = Webcam.getWebcams();
 		Webcam webcam = tempList.get(tempList.size()-1);
