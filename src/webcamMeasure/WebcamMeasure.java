@@ -1,7 +1,6 @@
 package webcamMeasure;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -53,18 +52,13 @@ public class WebcamMeasure {
 	//VARIABLES FOR SURVEY
 	private static String[] gender = new String[] {"Male", "Female", "N/A"};
 	private static String[] sports = new String[] {"Volleyball", "Tennis", "Basketball", "Football","Baseball/Softball","Soccer","Running"};
-	private static String[] sportsSoccer = new String[] {};
-	private static String[] sportsFootball = new String[] {"Offensive Line", "Defensive Line", "Line Backer", "Defensive Back/ WR", "Running Back"};
-	private static String[] typeOfFieldSF = new String[] {"Grass", "Turf"};
-	private static String[] typeOfFieldV = new String[] {"Count", "Sand"};
-	private static String[] typeOfFieldR = new String[] {"Treadmill", "Track", "Concrete"};
+	private static String[] sportsFootball = new String[] {"Offensive Line", "Defensive Line", "Line Backer", "Defensive Back/ WR", "Running Back","Not Football"};
+	private static String[] typesOfField = new String[] {"Grass", "Turf","Count", "Sand","Treadmill", "Track", "Concrete"};
 	
 	//ANSWERS FROM SURVEY AND BOOLEANS
-	private static String genderS;
+	private static boolean isMale;
 	private static String sportsS;
-	private static boolean isSoccer;
 	private static boolean isFootball;
-	private static String soccerPos;
 	private static String footballPos;
 	private static String fieldType;
 	
@@ -72,7 +66,6 @@ public class WebcamMeasure {
 	private static BufferedImage image;
 	private static File picture;
 	private static UserShoe shoeSize;
-	private static boolean isMale;
 	private static final int THRESHOLD = 50;
 	private static final double DISTANCE_WIDTH = 12.5; //Distance in inches from left to right
 	//private static final double DISTANCE_TO_MEASURE = 9.25; //Distance in inches from camera to surface
@@ -81,28 +74,40 @@ public class WebcamMeasure {
 		JFrame survey = new JFrame();
 		survey.setTitle("Pre-Measure Survey");
 		survey.setLayout(new FlowLayout());
+		JPanel title = new JPanel();
+		title.setLayout(new BoxLayout(title, BoxLayout.Y_AXIS));
+		title.add(new JLabel("<html><h1><strong><i>Shoe Measurer</i></strong></h1><hr></html>"));
+		title.add(Box.createHorizontalStrut(5));
+		title.add(new JLabel("Jordan Masesy", SwingConstants.CENTER));
+		survey.add(title);
 		survey.add(Box.createHorizontalStrut(20));
-		
+
 		JPanel questions = new JPanel();
 		questions.setLayout(new BoxLayout(questions, BoxLayout.Y_AXIS));
+		
+		//Gender Label and Question
 		questions.add(new JLabel("Gender?", SwingConstants.CENTER));
-		
-		
 		JComboBox<String> genderSurvey = new JComboBox<String>(gender);
 		genderSurvey.setAlignmentX(SwingConstants.CENTER);
 		questions.add(genderSurvey);
-		questions.add(Box.createVerticalStrut(20));
 		genderSurvey.addActionListener(new ActionListener() {
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				@SuppressWarnings("unchecked")
 				JComboBox<String> temp = (JComboBox<String>)e.getSource();
+				String tempS = ((String)temp.getSelectedItem()).toLowerCase();
+				if (tempS.equals("male") && !tempS.contains("fe")) {
+//					genderS = tempS;
+					isMale = false;
+				}
 				
 			}
 		});
-		questions.add(new JLabel("Sport?", SwingConstants.CENTER));
+		questions.add(Box.createVerticalStrut(20));
 		
+		//Sports Label and Question
+		questions.add(new JLabel("Sport?", SwingConstants.CENTER));
 		JComboBox<String> sportsSurvey = new JComboBox<String>(sports);
 		sportsSurvey.setAlignmentX(SwingConstants.CENTER);
 		questions.add(sportsSurvey);
@@ -112,23 +117,75 @@ public class WebcamMeasure {
 			public void actionPerformed(ActionEvent e) {
 				@SuppressWarnings("unchecked")
 				JComboBox<String> temp = (JComboBox<String>)e.getSource();
-				if (temp.getSelectedItem().equals("Basketball")) {
-					questions.add(new JLabel("test"));
-				}
+				sportsS = ((String)temp.getSelectedItem()).toLowerCase();
 			}
 			
 		});
-		questions.add(new JLabel("TEMP?", SwingConstants.CENTER));
+		questions.add(Box.createVerticalStrut(20));
+		
+		//Position (If applicable) Label and Question
+		questions.add(new JLabel("Position? (Only if football, otherwise put \"Not Football\")", SwingConstants.CENTER));
+		JComboBox<String> positionSurvey = new JComboBox<String>(sportsFootball);
+		positionSurvey.setAlignmentX(SwingConstants.CENTER);
+		questions.add(positionSurvey);
+		positionSurvey.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				@SuppressWarnings("unchecked")
+				JComboBox<String> temp = (JComboBox<String>)e.getSource();
+				String tempS = ((String)temp.getSelectedItem()).toLowerCase();
+				if (tempS.equals("Not Football")) {
+					isFootball = false;
+				} else {
+					isFootball = true;
+				}
+				footballPos = tempS;
+			}
+			
+		});
+		questions.add(Box.createVerticalStrut(20));
+		
+		//Type of Field (If applicable) Label and Question
+		questions.add(new JLabel("Type of Running Environment? (If none appliccable, select N/A)", SwingConstants.CENTER));
+		JComboBox<String> fieldSurvey = new JComboBox<String>(typesOfField);
+		fieldSurvey.setAlignmentX(SwingConstants.CENTER);
+		questions.add(fieldSurvey);
+		fieldSurvey.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				@SuppressWarnings("unchecked")
+				JComboBox<String> temp = (JComboBox<String>)e.getSource();
+				fieldType = ((String)temp.getSelectedItem()).toLowerCase();
+			}
+		});
+		questions.add(Box.createVerticalStrut(50));
+		
+		JButton submit = new JButton("Submit Answers");
+		questions.add(new JLabel("ONLY PRESS WHEN DONE WITH QUESTIONS",  SwingConstants.CENTER));
+		questions.add(submit);
+		submit.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				survey.dispatchEvent(new WindowEvent(survey, WindowEvent.WINDOW_CLOSING));
+				survey.dispose();
+				try {
+					program();
+				} catch (InterruptedException | IOException e1) {
+					e1.printStackTrace();
+				}
+			}
+		});
 		
 		survey.add(questions);
+		questions.setAlignmentX(SwingConstants.CENTER);
 		survey.add(Box.createHorizontalStrut(20));
 		survey.setVisible(true);
 		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
 		survey.setSize(screen.width,screen.height);
-//		survey.pack();
-		survey.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//		survey.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
-		program();
 		
 	}
 	
@@ -175,7 +232,6 @@ public class WebcamMeasure {
 					try {
 						results = measureDistance(image);
 					} catch (IOException e1) {
-						// TODO Auto-generated catch block
 						e1.printStackTrace();
 						results = new int[] {0,0,0};
 					}
@@ -235,13 +291,11 @@ public class WebcamMeasure {
 
 						@Override
 						public void keyPressed(java.awt.event.KeyEvent e) {
-							// TODO Auto-generated method stub
 							
 						}
 
 						@Override
 						public void keyReleased(java.awt.event.KeyEvent e) {
-							// TODO Auto-generated method stub
 							
 						}
 						
@@ -313,6 +367,43 @@ public class WebcamMeasure {
 //					resultsF.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 					resultsF.pack();
 					resultsF.setVisible(true);
+					
+					JFrame newWindow = new JFrame();
+					JFXPanel panel = new JFXPanel();
+					Platform.runLater( () -> {
+						WebView webView = new WebView();
+						webView.getEngine().load(shoeSize.getShoeURL());
+						panel.setScene(new Scene(webView));
+					});
+					System.out.println(shoeSize.getShoeURL());
+					newWindow.add(panel);
+					newWindow.setFocusable(true);
+					newWindow.requestFocus();
+					newWindow.addKeyListener(new KeyListener() {
+
+						@Override
+						public void keyTyped(java.awt.event.KeyEvent e) {
+							if (e.getKeyCode() == KeyEvent.VK_ESCAPE && e.getModifiers() == 0)
+								newWindow.dispatchEvent(new WindowEvent(newWindow, WindowEvent.WINDOW_CLOSING));
+						}
+
+						@Override
+						public void keyPressed(java.awt.event.KeyEvent e) {
+							
+						}
+
+						@Override
+						public void keyReleased(java.awt.event.KeyEvent e) {
+							
+						}
+						
+					});
+					System.out.println(newWindow.getKeyListeners());
+					newWindow.setTitle("WebPage");
+					newWindow.setVisible(true);
+					Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+					newWindow.setSize(screen.width, screen.height);
+					
 				} catch (IOException e1) {
 					e1.printStackTrace();
 				}
@@ -454,13 +545,11 @@ class UserShoe {
 	private static final double[][] MENS_SIZE = new double[][]{{7.0,9.6},{7.5,9.75},{8.0,9.9},{8.5,10.125},{9.0,10.25},{9.5,10.4},{10.0,10.6},{10.5,10.75},{11.0,10.9},{11.5, 11.125},{12.0,11.25},{13.0,11.6}};
 	private static final double[][] WOMENS_SIZE = new double[][] {{6.0,8.75},{6.5,9.0},{7.0,9.25},{7.5,9.375},{8.0,9.5},{8.5,9.75},{9.0,9.875},{9.5,10.0},{10.0,10.2},{10.5,10.35},{11,10.5}};
 	private double footL;
-	private double footW;
 	private double shoeSize;
 	boolean manOrWoman; //True if Man, False if Woman
 	
 	public UserShoe(int[] foot, boolean manOrWoman) {
 		footL = (double)foot[0];
-		footW = (double)foot[1];
 		this.manOrWoman = manOrWoman;
 		shoeSize = getShoeSize();
 	}
