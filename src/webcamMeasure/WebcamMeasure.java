@@ -59,8 +59,8 @@ public class WebcamMeasure {
 	private static JFrame mainFrame, survey;
 	private static BufferedImage image;
 	private static UserShoe shoeSize;
-	private static int THRESHOLD = 10;
-	private static double DISTANCE_WIDTH = 4; //Distance in inches from left to right
+	private static int THRESHOLD = 100;
+	private static double DISTANCE_WIDTH = 12; //Distance in inches from left to right
 	
 	
 	public static void main(String[] args) throws InterruptedException, IOException {
@@ -210,13 +210,13 @@ public class WebcamMeasure {
 		
 		JPanel thresholdPanel = new JPanel();
 		thresholdPanel.setLayout(new FlowLayout());
-		thresholdPanel.add(new JLabel("THRESHOLD(0-255):   "));
+		thresholdPanel.add(new JLabel("THRESHOLD(0-255) [Default: 100]:   "));
 		JTextField thresh = new JTextField(20);
 		thresholdPanel.add(thresh);
 		
 		JPanel widthPanel = new JPanel();
 		widthPanel.setLayout(new FlowLayout());
-		widthPanel.add(new JLabel("WIDTH THAT CAM SEES(INCHES):    "));
+		widthPanel.add(new JLabel("WIDTH THAT CAM SEES(INCHES) [Default: 12]:    "));
 		JTextField widthD = new JTextField(20);
 		widthPanel.add(widthD);
 		
