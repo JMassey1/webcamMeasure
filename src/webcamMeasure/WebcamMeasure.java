@@ -53,19 +53,22 @@ public class WebcamMeasure {
 	private static String[] gender = new String[] {"Male", "Female", "N/A"};
 	private static String[] sports = new String[] {"Volleyball", "Tennis", "Basketball", "Football","Baseball/Softball","Soccer","Running"};
 	private static String[] sportsFootball = new String[] {"Offensive Line", "Defensive Line", "Line Backer", "Defensive Back/ WR", "Running Back","Not Football"};
-	private static String[] typesOfField = new String[] {"Grass", "Turf","Count", "Sand","Treadmill", "Track", "Concrete"};
+	private static String[] typesOfField = new String[] {"Grass", "Turf","Court", "Sand","Treadmill", "Track", "Concrete"};
 	
-	//ANSWERS FROM SURVEY AND BOOLEANS
-	private static boolean isMale;
-	private static String sportsS;
-	private static boolean isFootball;
-	private static String footballPos;
-	private static String fieldType;
+	private static boolean isMale, isFootball;
+	private static String sportsS, footballPos, fieldType;
 	
 	
+	
+	private static Object[] surveyResults; //Holds ALL THE ABOVE VARIABLES
+	
+	private static JPanel resultsF;
+	private static JFrame mainFrame;
 	private static BufferedImage image;
 	private static File picture;
 	private static UserShoe shoeSize;
+	private static Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+	private static boolean hasUsedBefore, willCloseSoon = false;
 	private static final int THRESHOLD = 50;
 	private static final double DISTANCE_WIDTH = 12.5; //Distance in inches from left to right
 	//private static final double DISTANCE_TO_MEASURE = 9.25; //Distance in inches from camera to surface
@@ -101,6 +104,7 @@ public class WebcamMeasure {
 //					genderS = tempS;
 					isMale = false;
 				}
+					
 				
 			}
 		});
@@ -171,10 +175,12 @@ public class WebcamMeasure {
 				survey.dispatchEvent(new WindowEvent(survey, WindowEvent.WINDOW_CLOSING));
 				survey.dispose();
 				try {
-					program();
+					surveyResults = new Object[] {isMale, sportsS, isFootball, footballPos, fieldType};
+					program(surveyResults);
 				} catch (InterruptedException | IOException e1) {
 					e1.printStackTrace();
 				}
+				System.out.println("DONE");
 			}
 		});
 		
@@ -182,7 +188,6 @@ public class WebcamMeasure {
 		questions.setAlignmentX(SwingConstants.CENTER);
 		survey.add(Box.createHorizontalStrut(20));
 		survey.setVisible(true);
-		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
 		survey.setSize(screen.width,screen.height);
 //		survey.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
@@ -190,8 +195,8 @@ public class WebcamMeasure {
 	}
 	
 	
-	public static void program() throws InterruptedException, IOException {
-		
+	public static void program(Object[] surveyResults) throws InterruptedException, IOException {
+		hasUsedBefore = false;
 		java.util.List<Webcam> tempList = Webcam.getWebcams();
 		Webcam webcam = tempList.get(tempList.size()-1);
 		webcam.setViewSize(WebcamResolution.VGA.getSize());
@@ -201,8 +206,9 @@ public class WebcamMeasure {
 		panel.setDisplayDebugInfo(true);
 		panel.setMirrored(true);
 		
-		
-		JFrame webcamFrame = new JFrame("Webcam Viewer Panel");
+		mainFrame = new JFrame("Shoe Measurer");
+		JPanel inBetweenPanel = new JPanel();
+		JPanel webcamFrame = new JPanel();
 		JPanel captureP = new JPanel();
 		JPanel captureP1 = new JPanel();
 		JButton capture = new JButton("Side View");
@@ -211,8 +217,21 @@ public class WebcamMeasure {
 		JLabel response1 = new JLabel();
 		JRadioButton save = new JRadioButton("Save Picture");
 		JRadioButton save1 = new JRadioButton("Save Picture");
+		inBetweenPanel.setLayout(new BoxLayout(inBetweenPanel, BoxLayout.Y_AXIS));
 		captureP.setLayout(new BoxLayout(captureP, BoxLayout.Y_AXIS));
 		captureP1.setLayout(new BoxLayout(captureP1, BoxLayout.Y_AXIS));
+		
+		JLabel directions = new JLabel("<html><h4><p align=\"left\"><u>Click button one first, then click button two. "
+				+ "Results will load once the second button is pressed, so make sure to click it last.</p></h4></u></html>", SwingConstants.LEFT);
+		JLabel directions2 = new JLabel("<html><h4><p align=\"left\">Once results are loaded, press ESC to close out and start again</h4></html>", SwingConstants.LEFT);
+		Font tempFont = directions.getFont();
+		directions.setFont(new Font(tempFont.getName(), Font.PLAIN, 10));
+		directions2.setFont(new Font(tempFont.getName(), Font.PLAIN, 10));
+		inBetweenPanel.add(directions);
+		inBetweenPanel.add(Box.createVerticalStrut(5));
+		inBetweenPanel.add(directions2);
+		
+		
 		
 		response.setText("Press to Capture");
 		response1.setText("Press to Capture");
@@ -221,11 +240,15 @@ public class WebcamMeasure {
 		
 		capture.setBounds(100,100,210,50);
 		capture1.setBounds(100,100,200,50);
-		
+		//SIDE VIEW
 		capture.addActionListener(new ActionListener() {
 			
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
+				if (hasUsedBefore) {
+				webcamFrame.remove(resultsF);
+				}
+				webcamFrame.revalidate();
 				response.setText("Image Captured");
 				image = webcam.getImage();
 					int[] results;
@@ -235,9 +258,9 @@ public class WebcamMeasure {
 						e1.printStackTrace();
 						results = new int[] {0,0,0};
 					}
-					shoeSize = new UserShoe(results, isMale);
+					shoeSize = new UserShoe(results, surveyResults);
 					System.out.printf("PIXELS%nLength: %d%nHeight: %d%nINCHES%nLength: %f%nWidth: %f",results[0], results[1],pixToInchL(results[0]),pixToInchW(results[1],results[2]));
-					JFrame resultsF = new JFrame("Side View");
+					resultsF = new JPanel();
 					JPanel text = new JPanel();
 					text.setLayout(new BoxLayout(text, BoxLayout.Y_AXIS));
 					JLabel pixelM = new JLabel();
@@ -263,12 +286,10 @@ public class WebcamMeasure {
 					text.add(inchM);
 					text.add(inch1);
 					text.add(inch2);
-					
 					resultsF.add(text);
-					resultsF.setResizable(true);
-//					resultsF.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-					resultsF.pack();
-					resultsF.setVisible(true);
+					webcamFrame.add(resultsF);
+					webcamFrame.revalidate();
+//					resultsF.setVisible(true);
 					
 					JFrame newWindow = new JFrame();
 					JFXPanel panel = new JFXPanel();
@@ -284,18 +305,19 @@ public class WebcamMeasure {
 					newWindow.addKeyListener(new KeyListener() {
 
 						@Override
-						public void keyTyped(java.awt.event.KeyEvent e) {
+						public void keyPressed(KeyEvent e) {
+							System.out.println("HELP ME DEAR GOD");
 							if (e.getKeyCode() == KeyEvent.VK_ESCAPE && e.getModifiers() == 0)
 								newWindow.dispatchEvent(new WindowEvent(newWindow, WindowEvent.WINDOW_CLOSING));
 						}
 
 						@Override
-						public void keyPressed(java.awt.event.KeyEvent e) {
+						public void keyTyped(KeyEvent e) {
 							
 						}
 
 						@Override
-						public void keyReleased(java.awt.event.KeyEvent e) {
+						public void keyReleased(KeyEvent e) {
 							
 						}
 						
@@ -324,36 +346,35 @@ public class WebcamMeasure {
 						e.printStackTrace();
 					}
 				}
+				hasUsedBefore = true;
 			}
 		});
+		//FRONT VIEW
 		capture1.addActionListener(new ActionListener() {
 			
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
+				if (hasUsedBefore) {
+					webcamFrame.remove(resultsF);
+				}
+				webcamFrame.revalidate();
 				response1.setText("Image Captured");
 				image = webcam.getImage();
 				try {
 					int[] results = measureDistance(image);
 					System.out.printf("PIXELS%nLength: %d%nHeight: %d%nINCHES%nLength: %f%nWidth: %f",results[0], results[1],pixToInchL(results[0]),pixToInchW(results[1],results[2]));
-					JFrame resultsF = new JFrame("Front View");
+					JPanel resultsF = new JPanel();
 					JPanel text = new JPanel();
 					text.setLayout(new BoxLayout(text, BoxLayout.Y_AXIS));
-					JLabel pixelM = new JLabel();
-					JLabel inchM = new JLabel();
-					JLabel pixel1 = new JLabel();
-					JLabel pixel2 = new JLabel();
-					JLabel inch1 = new JLabel();
-					JLabel inch2 = new JLabel();
-					JLabel filler = new JLabel();
-					pixelM.setText("PIXEL MEASUREMENTS");
+					JLabel pixelM = new JLabel("PIXEL MEASUREMENTS");
+					JLabel inchM = new JLabel("IMPERIAL SYSTEM MEASUREMENTS");
+					JLabel pixel1 = new JLabel("Length: " + Integer.toString(results[0]) + " px");
+					JLabel pixel2 = new JLabel("Height: " + Integer.toString(results[1]) + " px");
+					JLabel inch1 = new JLabel("Length: " + Double.toString(pixToInchL(results[0])) + " in");
+					JLabel inch2 = new JLabel("Height: " + Double.toString(pixToInchW(results[1],results[2])) + " in");
+					JLabel filler = new JLabel("\n");
 					pixelM.setFont(new Font("Calibri", Font.BOLD, 20));
-					inchM.setText("IMPERIAL SYSTEM MEASUREMENTS");
 					inchM.setFont(new Font("Calibri", Font.BOLD, 20));
-					pixel1.setText("Length: " + Integer.toString(results[0]) + " px");
-					pixel2.setText("Height: " + Integer.toString(results[1]) + " px");
-					inch1.setText("Length: " + Double.toString(pixToInchL(results[0])) + " in");
-					inch2.setText("Height: " + Double.toString(pixToInchW(results[1],results[2])) + " in");
-					filler.setText("\n");
 					text.add(pixelM);
 					text.add(pixel1);
 					text.add(pixel2);
@@ -363,10 +384,8 @@ public class WebcamMeasure {
 					text.add(inch2);
 					
 					resultsF.add(text);
-					resultsF.setResizable(true);
-//					resultsF.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-					resultsF.pack();
-					resultsF.setVisible(true);
+					webcamFrame.add(resultsF);
+					webcamFrame.revalidate();
 					
 					JFrame newWindow = new JFrame();
 					JFXPanel panel = new JFXPanel();
@@ -382,18 +401,18 @@ public class WebcamMeasure {
 					newWindow.addKeyListener(new KeyListener() {
 
 						@Override
-						public void keyTyped(java.awt.event.KeyEvent e) {
+						public void keyTyped(KeyEvent e) {
 							if (e.getKeyCode() == KeyEvent.VK_ESCAPE && e.getModifiers() == 0)
 								newWindow.dispatchEvent(new WindowEvent(newWindow, WindowEvent.WINDOW_CLOSING));
 						}
 
 						@Override
-						public void keyPressed(java.awt.event.KeyEvent e) {
+						public void keyPressed(KeyEvent e) {
 							
 						}
 
 						@Override
-						public void keyReleased(java.awt.event.KeyEvent e) {
+						public void keyReleased(KeyEvent e) {
 							
 						}
 						
@@ -426,9 +445,11 @@ public class WebcamMeasure {
 						e.printStackTrace();
 					}
 				}
+				hasUsedBefore = true;
 			}
 		});
 		webcamFrame.setLayout(new FlowLayout());
+		
 		
 		captureP.add(capture);
 		captureP.add(response);
@@ -437,14 +458,16 @@ public class WebcamMeasure {
 		captureP1.add(capture1);
 		captureP1.add(response1);
 		captureP1.add(save1);
-		
 		webcamFrame.add(panel);
-		webcamFrame.add(captureP);
 		webcamFrame.add(captureP1);
-		webcamFrame.setResizable(true);
-		webcamFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		webcamFrame.pack();
-		webcamFrame.setVisible(true);
+		webcamFrame.add(captureP);
+		inBetweenPanel.add(webcamFrame);
+		mainFrame.add(inBetweenPanel);
+		mainFrame.setResizable(true);
+		mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//		webcamFrame.pack();
+		mainFrame.setSize(screen.width, screen.height);
+		mainFrame.setVisible(true);
 //		System.out.println("3  " + counter);
 	}
 	public static int[] measureDistance(Image img) throws IOException {
@@ -546,16 +569,22 @@ class UserShoe {
 	private static final double[][] WOMENS_SIZE = new double[][] {{6.0,8.75},{6.5,9.0},{7.0,9.25},{7.5,9.375},{8.0,9.5},{8.5,9.75},{9.0,9.875},{9.5,10.0},{10.0,10.2},{10.5,10.35},{11,10.5}};
 	private double footL;
 	private double shoeSize;
-	boolean manOrWoman; //True if Man, False if Woman
+	boolean isMale,isFootball; //True if Man, False if Woman
+	String sportsS,footballPos,fieldType;
 	
-	public UserShoe(int[] foot, boolean manOrWoman) {
+	
+	public UserShoe(int[] foot, Object[] survey) {
 		footL = (double)foot[0];
-		this.manOrWoman = manOrWoman;
+		isMale = (boolean)survey[0];
+		sportsS = (String)survey[1];
+		isFootball = (boolean)survey[2];
+		footballPos = (String)survey[3];
+		fieldType = (String)survey[4];
 		shoeSize = getShoeSize();
 	}
 	
 	public double getShoeSize() {
-		if (this.manOrWoman) {
+		if (this.isMale) {
 			for (double[] shoes: MENS_SIZE) {
 				if (shoes[1] >= footL) {
 					return shoes[0];
@@ -580,10 +609,16 @@ class UserShoe {
 	
 	public String getShoeURL() {
 		try {
-//			Map<String, String> temp = googleTest.googleSearch("basketball" + " shoe " + "\"" + shoeSize + "\"" + "\"" + footW + " width \"");
-			Map<String, String> temp = searchGoogle.googleSearch("basketball shoe " + shoeSize);
-			Set<Map.Entry<String, String>> tempS = temp.entrySet();
-			for (Map.Entry<String, String> entry: tempS) { 
+			Map<String, String> searchList;
+			if (isFootball) { //If in football
+				searchList = searchGoogle.googleSearch(sportsS + " " + footballPos + " " + fieldType + 
+						" size " + shoeSize + " \"shoe\"");
+			} else { //If not in football
+				searchList = searchGoogle.googleSearch(sportsS + " " + fieldType + " size " + 
+			shoeSize + " \"shoe\"");
+			}
+			Set<Map.Entry<String, String>> searchListSet = searchList.entrySet();
+			for (Map.Entry<String, String> entry: searchListSet) { 
 				if (entry.getKey().toLowerCase().contains("amazon")) {
 					return entry.getValue();
 				}
@@ -591,7 +626,16 @@ class UserShoe {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+		try {
+			Set<Map.Entry<String, String>> takeTwo = searchGoogle.googleSearch(sportsS + " \"shoe\" size " + shoeSize).entrySet();
+			for (Map.Entry<String, String> entry: takeTwo) {
+				if (entry.getKey().toLowerCase().contains("amazon")) {
+					return entry.getValue();
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		return "http://www.google.com/";
 		
 	}
@@ -602,9 +646,8 @@ class searchGoogle {
 	public static Map<String, String> googleSearch(String search) throws UnsupportedEncodingException, IOException {
 		String google = "http://www.google.com/search?q=";
 		String charset = "UTF-8";
-		String userAgent = "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"; // Change this to your company's name and bot homepage!
+		String userAgent = "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)";
 		Map<String, String> results = new HashMap<String, String>();
-//		ArrayList<String> returnResult = new ArrayList<String>();
 		
 		Elements links = Jsoup.connect(google + URLEncoder.encode(search, charset)).userAgent(userAgent).get().select(".g>.r>a");
 
