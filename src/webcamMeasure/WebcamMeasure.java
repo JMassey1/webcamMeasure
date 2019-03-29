@@ -1,12 +1,10 @@
 package webcamMeasure;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Image;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -61,7 +59,6 @@ public class WebcamMeasure {
 	private static JFrame mainFrame, survey;
 	private static BufferedImage image;
 	private static UserShoe shoeSize;
-	private static Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
 	private static int THRESHOLD = 10;
 	private static double DISTANCE_WIDTH = 4; //Distance in inches from left to right
 	
@@ -172,6 +169,7 @@ public class WebcamMeasure {
 		questions.add(new JLabel("ONLY PRESS WHEN DONE WITH QUESTIONS",  SwingConstants.CENTER));
 		questions.add(submit);
 		submit.addActionListener(new ActionListener() {
+			
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				survey.dispatchEvent(new WindowEvent(survey, WindowEvent.WINDOW_CLOSING));
@@ -185,9 +183,12 @@ public class WebcamMeasure {
 			}
 		});
 		
+		questions.add(Box.createVerticalStrut(10));
+		
 		JButton settingsStuff = new JButton("Settings");
 		questions.add(settingsStuff);
 		settingsStuff.addActionListener(new ActionListener() {
+			
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				settingsSurvey();
@@ -198,7 +199,7 @@ public class WebcamMeasure {
 		questions.setAlignmentX(SwingConstants.CENTER);
 		survey.add(Box.createHorizontalStrut(20));
 		survey.setVisible(true);
-		survey.setSize(screen.width,screen.height);
+		survey.setExtendedState(JFrame.MAXIMIZED_BOTH);
 		
 	}
 	
@@ -227,8 +228,8 @@ public class WebcamMeasure {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				System.out.println(THRESHOLD = Integer.parseInt(thresh.getText()));
-				System.out.println(DISTANCE_WIDTH = Double.parseDouble(widthD.getText()));
+				THRESHOLD = Integer.parseInt(thresh.getText());
+				DISTANCE_WIDTH = Double.parseDouble(widthD.getText());
 				sett.dispatchEvent(new WindowEvent(sett, WindowEvent.WINDOW_CLOSING));
 				sett.dispose();
 			}
@@ -245,7 +246,6 @@ public class WebcamMeasure {
 		java.util.List<Webcam> tempList = Webcam.getWebcams();
 		Webcam webcam = tempList.get(tempList.size()-1);
 		webcam.setViewSize(WebcamResolution.VGA.getSize());
-		System.out.println(WebcamResolution.VGA.getSize());
 		WebcamPanel panel = new WebcamPanel(webcam);
 		panel.setFPSDisplayed(true);
 		panel.setDisplayDebugInfo(true);
@@ -336,7 +336,7 @@ public class WebcamMeasure {
 						JFrame error = new JFrame();
 						error.add(new JLabel("<html><h1><u><i>COULD NOT FIND SHOE, TRY REMEASURING</i></u></h1></html>", SwingConstants.CENTER));
 						error.setVisible(true);
-						error.setSize(screen.width, screen.height);
+						error.setExtendedState(JFrame.MAXIMIZED_BOTH);
 						try {
 							Thread.sleep(5000);
 							error.dispatchEvent(new WindowEvent(error, WindowEvent.WINDOW_CLOSING));
@@ -376,8 +376,7 @@ public class WebcamMeasure {
 					});
 					newWindow.setTitle("WebPage -  Estimated Shoe Size ~~ " + shoeSize.returnShoeSize());
 					newWindow.setVisible(true);
-					Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
-					newWindow.setSize(screen.width, screen.height);
+					newWindow.setExtendedState(JFrame.MAXIMIZED_BOTH);
 			}
 				hasUsedBefore = true;
 			}
@@ -423,7 +422,7 @@ public class WebcamMeasure {
 		mainFrame.add(inBetweenPanel);
 		mainFrame.setResizable(true);
 		mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		mainFrame.setSize(screen.width, screen.height);
+		mainFrame.setExtendedState(JFrame.MAXIMIZED_BOTH);
 		mainFrame.setVisible(true);
 	}
 	public static int[] measureDistance(Image img) throws IOException {
@@ -548,7 +547,6 @@ class UserShoe {
 	
 	public double getShoeSize() {
 		if (isMale) {
-			System.out.print(footL);
 			for (double[] shoes: MENS_SIZE) {
 				if (shoes[1] >= footL) {
 					return shoes[0];
@@ -585,7 +583,6 @@ class UserShoe {
 			if (isFootball) {query += footballPos + " ";}
 			if (doesField) {query += fieldType + " ";}
 			query += "size " + shoeSize + " shoe buy";
-			System.out.println(query);
 			searchList = searchGoogle.googleSearch(query);
 			Set<Map.Entry<String, String>> searchListSet = searchList.entrySet();
 			for (Map.Entry<String, String> entry: searchListSet) { 
